@@ -6,6 +6,7 @@ info:
 
 servers:
   - url: http://localhost:3030/api/v1
+  - url: https://arnb-backend.onrender.com/api/v1
 
 tags:
   - name: auth
