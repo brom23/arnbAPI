@@ -7,7 +7,9 @@
   "type": "commonjs",
   "main": "server.js",
   "scripts": {
-    "dev": "npx ts-node src/server.ts",
+    "dev": "ts-node src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "docs:build": "swagger-cli bundle src/docs/openapi.yaml -o dist/openapi.json",
     "docs:watch": "swagger-cli bundle src/docs/openapi.yaml -o dist/openapi.json --watch"
