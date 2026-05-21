@@ -1,0 +1,25 @@
+Start serwera:
+
+npm run dev
+
+Adresy:
+
+- Dokumentacja: http://localhost:3030/api-docs/
+
+API	   http://localhost:3030
+
+GET        /api/v1/apartments/
+GET        /api/v1/apartments/search
+GET        /api/v1/apartments/:id
+GET        /api/v1/apartments/:id/bookings/unavailable-dates
+POST       /api/v1/apartments/
+PATCH      /api/v1/apartments/:id
+GET        /api/v1/bookings/
+GET        /api/v1/bookings/:id
+POST       /api/v1/bookings/
+GET        /api/v1/apartment-images/
+GET        /api/v1/apartment-images/:apartmentId
+POST       /api/v1/apartment-images/
+POST       /api/v1/auth/admin/login
+
+Dodatkowo jest konto admina.

@@ -1,0 +1,64 @@
+openapi: 3.0.0
+
+info:
+  title: API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3030/api/v1
+
+tags:
+  - name: auth
+    description: Authentication
+  - name: apartments
+    description: Apartment management
+  - name: bookings
+    description: Booking system
+  - name: apartment-images
+    description: Images for apartments
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  # 🔐 AUTH
+  /auth/admin/login:
+    $ref: "./auth.yaml#/paths/~1auth~1admin~1login"
+
+  # 🏠 APARTMENTS
+  /apartments:
+    $ref: "./apartments.yaml#/paths/~1apartments"
+
+  /apartments/search:
+    $ref: "./apartments.yaml#/paths/~1apartments~1search"
+
+  /apartments/{id}:
+    $ref: "./apartments.yaml#/paths/~1apartments~1{id}"
+
+  /apartments/{id}/bookings/unavailable-dates:
+    $ref: "./apartments.yaml#/paths/~1apartments~1{id}~1bookings~1unavailable-dates"
+
+  # 📅 BOOKINGS
+  /bookings:
+    $ref: "./bookings.yaml#/paths/~1bookings"
+
+  /bookings/{id}:
+    $ref: "./bookings.yaml#/paths/~1bookings~1{id}"
+
+  # 🖼️ IMAGES
+  /apartment-images:
+    $ref: "./apartment-images.yaml#/paths/~1apartment-images"
+
+  /apartment-images/{apartmentId}:
+    $ref: "./apartment-images.yaml#/paths/~1apartment-images~1{apartmentId}"
+  
+  /apartment-images/upload:
+    $ref: "./apartment-images.yaml#/paths/~1apartment-images~1upload"

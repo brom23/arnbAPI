@@ -1,0 +1,309 @@
+paths:
+
+  /bookings:
+    get:
+      tags:
+        - bookings
+
+      summary: Get all bookings
+      description: Admin only (requires Bearer token)
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        200:
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+
+        403:
+          description: Forbidden (admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+
+        404:
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingNotFound"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+
+    post:
+      tags:
+        - bookings
+
+      summary: Create booking
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBooking"
+
+      responses:
+        201:
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        400:
+          description: Validation error or apartment unavailable
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ValidationError"
+                  - type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Apartment is not available for selected dates
+
+        409:
+          description: Apartment is not available for selected dates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Apartment is not available for selected dates
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+
+  /bookings/{id}:
+    get:
+      tags:
+        - bookings
+
+      summary: Get booking by ID
+      description: Admin only (requires Bearer token)
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+
+      responses:
+        200:
+          description: Booking details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+
+        403:
+          description: Forbidden (admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+
+        404:
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingNotFound"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    Booking:
+      type: object
+
+      properties:
+        id:
+          type: string
+          format: uuid
+
+        apartment_id:
+          type: string
+          format: uuid
+
+        check_in:
+          type: string
+          format: date
+          example: 2026-05-20
+
+        check_out:
+          type: string
+          format: date
+          example: 2026-05-21
+
+        guests:
+          type: integer
+          example: 2
+
+        total_price:
+          type: number
+          nullable: true
+          example: 420
+
+        email:
+          type: string
+          format: email
+          example: test@example.com
+
+        status:
+          type: string
+          example: pending
+
+        created_at:
+          type: string
+          format: date-time
+
+        hold_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+
+        price_total:
+          type: number
+          nullable: true
+          example: 420
+
+    CreateBooking:
+      type: object
+
+      required:
+        - apartment_id
+        - check_in
+        - check_out
+        - guests
+        - email
+
+      properties:
+        apartment_id:
+          type: string
+          format: uuid
+
+        check_in:
+          type: string
+          format: date
+
+        check_out:
+          type: string
+          format: date
+
+        guests:
+          type: integer
+
+        total_price:
+          type: number
+          nullable: true
+
+        email:
+          type: string
+          format: email
+
+    BookingNotFound:
+      type: object
+
+      properties:
+        message:
+          type: string
+          example: Booking not found
+
+    ValidationError:
+      type: object
+
+      properties:
+        message:
+          type: string
+          example: Validation error
+
+        errors:
+          type: array
+
+          items:
+            type: object
+
+            properties:
+              field:
+                type: string
+                example: apartment_id
+
+              message:
+                type: string
+                example: Invalid UUID
+
+    UnauthorizedError:
+      type: object
+
+      properties:
+        message:
+          type: string
+          example: Unauthorized
+
+    ForbiddenError:
+      type: object
+
+      properties:
+        message:
+          type: string
+          example: Forbidden
+
+    InternalServerError:
+      type: object
+
+      properties:
+        error:
+          type: string
+          example: Internal server error

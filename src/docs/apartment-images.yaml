@@ -1,0 +1,250 @@
+paths:
+
+  /apartment-images:
+    get:
+      tags:
+        - apartment-images
+      summary: Get all apartment images
+
+      responses:
+        200:
+          description: List of apartment images
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApartmentImage"
+
+        404:
+          description: Images not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageNotFound"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+
+    post:
+      tags:
+        - apartment-images
+      summary: Create apartment image
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateApartmentImage"
+
+      responses:
+        201:
+          description: Apartment image created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApartmentImage"
+
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+
+  /apartment-images/upload:
+    post:
+      tags:
+        - apartment-images
+      summary: Upload apartment image
+      description: Upload image using multipart/form-data (Multer)
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - apartmentId
+                - image
+              properties:
+                apartmentId:
+                  type: string
+                  format: uuid
+                  description: ID of the apartment
+
+                image:
+                  type: string
+                  format: binary
+                  description: "Image file (Multer field name: image)"
+
+      responses:
+        201:
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApartmentImage"
+
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+
+  /apartment-images/{apartmentId}:
+    get:
+      tags:
+        - apartment-images
+      summary: Get images by apartment ID
+
+      parameters:
+        - name: apartmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+
+      responses:
+        200:
+          description: Apartment images
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApartmentImage"
+
+        404:
+          description: Images not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageNotFound"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+
+components:
+
+  schemas:
+
+    ApartmentImage:
+      type: object
+
+      properties:
+        id:
+          type: string
+          format: uuid
+
+        apartment_id:
+          type: string
+          format: uuid
+
+        image_url:
+          type: string
+          format: uri
+          example: https://example.com/image.jpg
+
+        created_at:
+          type: string
+          format: date-time
+
+        position:
+          type: integer
+          nullable: true
+          example: 0
+
+        is_cover:
+          type: boolean
+          nullable: true
+          example: false
+
+    CreateApartmentImage:
+      type: object
+
+      required:
+        - apartment_id
+        - image_url
+
+      properties:
+        apartment_id:
+          type: string
+          format: uuid
+
+        image_url:
+          type: string
+          format: uri
+
+        position:
+          type: integer
+          nullable: true
+
+        is_cover:
+          type: boolean
+          nullable: true
+
+    ImageNotFound:
+      type: object
+
+      properties:
+        message:
+          type: string
+          example: No images found
+
+    ValidationError:
+      type: object
+
+      properties:
+        message:
+          type: string
+          example: Validation error
+
+        errors:
+          type: array
+
+          items:
+            type: object
+
+            properties:
+              field:
+                type: string
+                example: apartment_id
+
+              message:
+                type: string
+                example: Invalid UUID
+
+    InternalServerError:
+      type: object
+
+      properties:
+        message:
+          type: string
+          example: Internal server error
