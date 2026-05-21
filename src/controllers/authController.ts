@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
 
-const ADMIN_EMAIL = "admin@test.com";
-const ADMIN_PASSWORD = "admin123";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL as string;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD as string;
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  throw new Error("Missing admin env variables");
+}
 
 export const adminLogin = async (
   req: Request,
