@@ -97,3 +97,72 @@ export const deleteApartmentById = async (id: string) => {
 
   return data;
 };
+
+export const updateApartmentCover = async (
+  apartmentId: string,
+  imageId: string
+) => {
+
+  // sprawdź czy zdjęcie należy do apartamentu
+  const { data: image, error: imageError } = await supabase
+    .from('apartment_images')
+    .select('*')
+    .eq('id', imageId)
+    .eq('apartment_id', apartmentId)
+    .single();
+
+  if (imageError || !image) {
+    throw new Error('Image not found for this apartment');
+  }
+
+  // update cover
+  const { data, error } = await supabase
+    .from('apartments')
+    .update({
+      image: image.image_url
+    })
+    .eq('id', apartmentId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const updateApartmentCoverByImage = async (
+  apartmentId: string,
+  imageId: string
+) => {
+
+  // 1. pobierz zdjęcie
+  const { data: image, error: imageError } = await supabase
+    .from('apartment_images')
+    .select('image_url')
+    .eq('id', imageId)
+    .eq('apartment_id', apartmentId)
+    .single();
+
+  if (imageError || !image) {
+    throw new Error('Image not found');
+  }
+
+  // 2. update apartments.image
+  const { data, error } = await supabase
+    .from('apartments')
+    .update({
+      image: image.image_url
+    })
+    .eq('id', apartmentId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+

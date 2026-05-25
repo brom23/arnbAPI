@@ -8,6 +8,7 @@ import {
     getUnavailableDates,
     createApartment,
     updateApartment,
+    updateApartmentCover,
     deleteApartment    
 } from '../controllers/apartmentController';
 
@@ -23,6 +24,7 @@ router.get('/:id/bookings/unavailable-dates',  getUnavailableDates);
 router.post('/', authenticate, requireAdmin, createApartment);
 
 router.patch('/:id', authenticate, requireAdmin, updateApartment);
+router.patch('/:id/cover', authenticate, requireAdmin, updateApartmentCover);
 
 router.delete('/:id', authenticate, requireAdmin, deleteApartment);
 

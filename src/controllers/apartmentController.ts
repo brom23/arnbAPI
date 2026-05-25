@@ -7,6 +7,7 @@ import {
   fetchApartmentBookings,
   insertApartment,
   updateApartmentById,
+  updateApartmentCoverByImage,
   deleteApartmentById
 } from '../services/apartmentService';
 
@@ -280,4 +281,45 @@ export const deleteApartment = async (
       error: "Internal server error"
     });
   }
+};
+
+export const updateApartmentCover = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const { id } = req.params;
+    const { imageId } = req.body;
+
+    console.log(`📥 PATCH /apartments/${id}/cover`);
+    console.log("BODY:", req.body);
+
+    if (!imageId) {
+      return res.status(400).json({
+        message: "imageId is required"
+      });
+    }
+
+    const apartment = await updateApartmentCoverByImage(
+      id as string,
+      imageId
+    );
+
+    return res.status(200).json(apartment);
+
+  } catch (error: any) {
+
+    console.error(
+      "❌ UPDATE APARTMENT COVER ERROR:",
+      error.message
+    );
+
+    return res.status(500).json({
+      message: "Internal server error"
+    });
+
+  }
+
 };
