@@ -254,10 +254,8 @@ export const updateApartment = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteApartment = async (
-  req: Request,
-  res: Response
-) => {
+export async function deleteApartment(req: Request,
+  res: Response) {
 
   const { id } = req.params;
 
@@ -265,13 +263,13 @@ export const deleteApartment = async (
 
     const apartment = await deleteApartmentById(id as string);
 
-    if(apartment.length === 0) {
+    if (apartment.length === 0) {
       return res.status(404).json({
         message: "Apartment not found"
       });
     }
 
-    return res.json({"message": "Apartment deleted successfully"});
+    return res.json({ "message": "Apartment deleted successfully" });
 
   } catch (error: any) {
 
@@ -281,7 +279,7 @@ export const deleteApartment = async (
       error: "Internal server error"
     });
   }
-};
+}
 
 export const updateApartmentCover = async (
   req: Request,

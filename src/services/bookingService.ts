@@ -73,3 +73,38 @@ export const checkApartmentAvailability = async (
 
     return data;
 };
+
+export const updateBooking = async (
+  id: string,
+  payload: any
+) => {
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .update(payload)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const deleteBooking = async (
+  id: string
+) => {
+
+  const { error } = await supabase
+    .from("bookings")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return true;
+};

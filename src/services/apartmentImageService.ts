@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { supabase } from '../lib/supabase';
+import { removeFileFromStorage } from '../utils/storage';
 
 export const insertApartmentImage = async (payload: any) => {
 
@@ -103,4 +104,38 @@ export const storeApartmentImage = async (
   }
 
   return data;
+};
+
+export const deleteApartmentImage = async (
+  id: string
+) => {
+
+  // 1. Pobierz image
+  const { data: image, error: fetchError } = await supabase
+    .from("apartment_images")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !image) {
+    throw new Error("Image not found");
+  }
+
+  // 2. Usuń plik ze storage
+  await removeFileFromStorage(
+    "apartments",
+    image.url
+  );
+
+  // 3. Usuń rekord z DB
+  const { error: deleteError } = await supabase
+    .from("apartment_images")
+    .delete()
+    .eq("id", id);
+
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+
+  return true;
 };

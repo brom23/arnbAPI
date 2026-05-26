@@ -11,6 +11,7 @@ import {
     updateApartmentCover,
     deleteApartment    
 } from '../controllers/apartmentController';
+import { deleteApartmentById } from '../services/apartmentService';
 
 const router = Router();
 

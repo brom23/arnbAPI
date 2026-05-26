@@ -4,7 +4,9 @@ import {
   fetchBookings,
   fetchBookingById,
   insertBooking,
-  checkApartmentAvailability
+  checkApartmentAvailability,
+  updateBooking,
+  deleteBooking
 } from "../services/bookingService";
 
 export const getBookings = async (req: Request, res: Response) => {
@@ -114,4 +116,142 @@ export const createBooking = async (req: Request, res: Response) => {
             error: "Internal server error"
         });
     }
+};
+
+export const updateBookingById = async (
+  req: Request,
+  res: Response
+) => {
+
+  const { id } = req.params;
+
+  console.log(`📥 PATCH /bookings/${id}`);
+  console.log("BODY:", req.body);
+
+  const result = bookingSchema.partial().safeParse(req.body);
+
+  if (!result.success) {
+    return res.status(400).json({
+      message: "Validation error",
+      errors: result.error.issues.map(e => ({
+        field: e.path[0],
+        message: e.message
+      }))
+    });
+  }
+
+  try {
+
+    // 🔥 booking exists
+    const existingBooking = await fetchBookingById(id as string);
+
+    if (!existingBooking) {
+      return res.status(404).json({
+        message: "Booking not found"
+      });
+    }
+
+    // 🔥 date validation
+    const checkIn =
+      result.data.check_in || existingBooking.check_in;
+
+    const checkOut =
+      result.data.check_out || existingBooking.check_out;
+
+    if (
+      new Date(checkOut) <=
+      new Date(checkIn)
+    ) {
+      return res.status(400).json({
+        message: "check_out must be after check_in"
+      });
+    }
+
+    // 🔥 availability validation
+    if (
+      result.data.check_in ||
+      result.data.check_out ||
+      result.data.apartment_id
+    ) {
+
+      const apartmentId =
+        result.data.apartment_id ||
+        existingBooking.apartment_id;
+
+      const conflicts =
+        await checkApartmentAvailability(
+          apartmentId,
+          checkIn,
+          checkOut
+        );
+
+      // pomijamy aktualny booking
+      const filteredConflicts = conflicts.filter(
+        (booking: any) => booking.id !== id
+      );
+
+      if (filteredConflicts.length > 0) {
+        return res.status(409).json({
+          message:
+            "Apartment is not available for selected dates"
+        });
+      }
+    }
+
+    const updatedBooking = await updateBooking(
+      id as string,
+      result.data
+    );
+
+    return res.status(200).json(updatedBooking);
+
+  } catch (error: any) {
+
+    console.error(
+      "❌ UPDATE BOOKING ERROR:",
+      error.message
+    );
+
+    return res.status(500).json({
+      error: "Internal server error"
+    });
+  }
+};
+
+export const deleteBookingById = async (
+  req: Request,
+  res: Response
+) => {
+
+  const { id } = req.params;
+
+  console.log(`📥 DELETE /bookings/${id}`);
+
+  try {
+
+    const booking = await fetchBookingById(id as string);
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found"
+      });
+    }
+
+    await deleteBooking(id as string);
+
+    return res.status(200).json({
+      message: "Booking deleted successfully"
+    });
+
+  } catch (error: any) {
+
+    console.error(
+      "❌ DELETE BOOKING ERROR:",
+      error.message
+    );
+
+    return res.status(500).json({
+      error: "Internal server error"
+    });
+  }
 };

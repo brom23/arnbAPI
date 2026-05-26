@@ -50,6 +50,9 @@ paths:
   /apartments/{id}/bookings/unavailable-dates:
     $ref: "./apartments.yaml#/paths/~1apartments~1{id}~1bookings~1unavailable-dates"
 
+  /apartment-images/{id}:
+    $ref: "./apartment-images.yaml#/paths/~1apartment-images~1{id}"
+
   # 📅 BOOKINGS
   /bookings:
     $ref: "./bookings.yaml#/paths/~1bookings"

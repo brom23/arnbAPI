@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { removeFileFromStorage } from '../utils/storage';
 
 export const fetchApartments = async () => {
 
@@ -83,8 +84,44 @@ export const updateApartmentById = async (
     return data;
 };
 
-export const deleteApartmentById = async (id: string) => {
+export const deleteApartmentById = async (
+  id: string
+) => {
 
+  // 1. Pobierz wszystkie zdjęcia apartamentu
+  const { data: images, error: imagesError } = await supabase
+    .from("apartment_images")
+    .select("*")
+    .eq("apartment_id", id);
+
+  if (imagesError) {
+    throw new Error(imagesError.message);
+  }
+
+  // 2. Usuń pliki ze storage
+  if (images && images.length > 0) {
+
+    await Promise.all(
+      images.map((image) =>
+        removeFileFromStorage(
+          "apartments",
+          image.url
+        )
+      )
+    );
+
+    // 3. Usuń rekordy zdjęć
+    const { error: deleteImagesError } = await supabase
+      .from("apartment_images")
+      .delete()
+      .eq("apartment_id", id);
+
+    if (deleteImagesError) {
+      throw new Error(deleteImagesError.message);
+    }
+  }
+
+  // 4. Usuń apartment
   const { data, error } = await supabase
     .from("apartments")
     .delete()
@@ -92,7 +129,7 @@ export const deleteApartmentById = async (id: string) => {
     .select();
 
   if (error) {
-    throw error;
+    throw new Error(error.message);
   }
 
   return data;

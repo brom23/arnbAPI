@@ -4,7 +4,9 @@ import { requireAdmin } from '../middleware/requireAdmin';
 import {
     getBookings,
     getBookingById,
-    createBooking
+    createBooking,
+    updateBookingById,
+    deleteBookingById
 } from '../controllers/bookingController';
 
 const router = Router();
@@ -14,5 +16,8 @@ router.get('/:id', authenticate, requireAdmin, getBookingById);
 
 //POST /bookings - create a new booking (no auth required for now, can be changed later)
 router.post('/', createBooking);
+
+router.patch('/:id', authenticate, requireAdmin, updateBookingById);
+router.delete('/:id', authenticate, requireAdmin, deleteBookingById);
 
 export default router;

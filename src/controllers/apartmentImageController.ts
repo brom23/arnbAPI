@@ -3,7 +3,8 @@ import { apartmentImageSchema } from '../validators/apartmentImageValidator';
 import { insertApartmentImage, 
          fetchApartmentImages,
          fetchImagesByApartmentId,
-         storeApartmentImage 
+         storeApartmentImage,
+         deleteApartmentImage
         } from '../services/apartmentImageService';
 
 export const createApartmentImage = async (req: Request, res: Response) => {
@@ -95,4 +96,36 @@ export const uploadApartmentImage = async (
       message: "Internal server error",
     });
   }
+};
+
+export const removeApartmentImage = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const { id } = req.params;
+
+    console.log(`📥 DELETE /apartment-images/${id}`);
+
+    await deleteApartmentImage(id as string);
+
+    return res.status(200).json({
+      message: "Image deleted successfully"
+    });
+
+  } catch (error: any) {
+
+    console.error(
+      "❌ DELETE IMAGE ERROR:",
+      error.message
+    );
+
+    return res.status(500).json({
+      message: "Internal server error"
+    });
+
+  }
+
 };
