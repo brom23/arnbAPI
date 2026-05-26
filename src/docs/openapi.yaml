@@ -44,6 +44,9 @@ paths:
   /apartments/{id}:
     $ref: "./apartments.yaml#/paths/~1apartments~1{id}"
 
+  /apartments/{id}/cover:
+    $ref: "./apartments.yaml#/paths/~1apartments~1{id}~1cover"
+
   /apartments/{id}/bookings/unavailable-dates:
     $ref: "./apartments.yaml#/paths/~1apartments~1{id}~1bookings~1unavailable-dates"
 

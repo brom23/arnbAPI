@@ -216,7 +216,77 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
- 
+                
+  /apartments/{id}/cover:
+    patch:
+      tags:
+        - apartments
+
+      summary: Update apartment cover image
+      description: Admin only (requires JWT + role check in backend)
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Apartment ID
+          schema:
+            type: string
+            format: uuid
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+
+              required:
+                - imageId
+
+              properties:
+                imageId:
+                  type: string
+                  format: uuid
+                  example: 7b9c2d1e-4f2c-4d7b-9f1a-2c6b8e9d1234
+
+      responses:
+        200:
+          description: Apartment cover updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Apartment"
+
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+
+        401:
+          description: Unauthorized
+
+        403:
+          description: Forbidden (admin only)
+
+        404:
+          description: Apartment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApartmentNotFound"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
     delete:
       tags:
         - apartments
