@@ -203,3 +203,15 @@ export const updateApartmentCoverByImage = async (
   return data;
 };
 
+export const fetchImagesByApartmentId = async (apartmentId: string) => {
+
+    const { data, error } = await supabase
+        .from('apartment_images')
+        .select('*')
+        .eq('apartment_id', apartmentId)
+        .order('position', { ascending: true });
+
+    if (error) throw error;
+
+    return data;
+};

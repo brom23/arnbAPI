@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { createApartmentImage, 
-         getImages, 
-         getImagesByApartment,
+         getImages,
          uploadApartmentImage,
          removeApartmentImage
         } from '../controllers/apartmentImageController';
@@ -13,7 +12,7 @@ const router = Router();
 
 router.get('/', getImages);
 
-router.get('/:apartmentId', getImagesByApartment);
+//router.get('/:apartmentId', getImagesByApartment);
 
 router.post('/', createApartmentImage);
 router.post('/upload', upload.single("image"),uploadApartmentImage);

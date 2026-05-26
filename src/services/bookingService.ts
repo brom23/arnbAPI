@@ -108,3 +108,39 @@ export const deleteBooking = async (
 
   return true;
 };
+
+export const updateBookingStatus = async (
+  id: string,
+  status: string
+) => {
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .update({ status })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const fetchBookingsByApartmentId = async (
+  apartmentId: string
+) => {
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("apartment_id", apartmentId)
+    .order("check_in", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};

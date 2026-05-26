@@ -8,7 +8,8 @@ import {
   insertApartment,
   updateApartmentById,
   updateApartmentCoverByImage,
-  deleteApartmentById
+  deleteApartmentById,
+  fetchImagesByApartmentId
 } from '../services/apartmentService';
 
 export const getApartaments = async (req: Request, res: Response) => {
@@ -320,4 +321,24 @@ export const updateApartmentCover = async (
 
   }
 
+};
+
+export const getImagesByApartment = async (req: Request, res: Response) => {
+
+    try {
+
+        const { apartmentId } = req.params;
+
+        const images = await fetchImagesByApartmentId(apartmentId as string);
+
+        if (!images || images.length === 0) {
+            return res.status(404).json({ message: "No images found" });
+        }
+
+        return res.json(images);
+
+    } catch (error: any) {
+        console.error("❌ GET IMAGES BY APARTMENT ERROR:", error.message);
+        return res.status(500).json({ message: "Internal serwer error" });
+    }
 };

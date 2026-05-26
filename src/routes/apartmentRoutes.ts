@@ -9,9 +9,9 @@ import {
     createApartment,
     updateApartment,
     updateApartmentCover,
-    deleteApartment    
+    deleteApartment,
+    getImagesByApartment 
 } from '../controllers/apartmentController';
-import { deleteApartmentById } from '../services/apartmentService';
 
 const router = Router();
 
@@ -19,6 +19,8 @@ router.get('/', getApartaments);
 router.get('/search', searchApartments);
 router.get('/:id', getApartmentById);
 
+
+router.get('/:id/images', getImagesByApartment);
 // służy do pobierania zarezerwowanych dat dla danego apartamentu, zeby frontend mogl je zablokowac w kalendarzu
 router.get('/:id/bookings/unavailable-dates',  getUnavailableDates);
 

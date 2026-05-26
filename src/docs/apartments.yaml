@@ -287,6 +287,52 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
+        
+  /apartments/{id}/images:
+    get:
+      tags:
+        - apartments
+
+      summary: Get images for apartment
+      description: Returns all images assigned to a specific apartment
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Apartment ID
+          schema:
+            type: string
+            format: uuid
+
+      responses:
+        200:
+          description: List of apartment images
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApartmentImage"
+
+        404:
+          description: No images found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No images found
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+
     delete:
       tags:
         - apartments
@@ -571,6 +617,25 @@ components:
 
         min_guests:
           type: integer
+
+    ApartmentImage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+
+        apartment_id:
+          type: string
+          format: uuid
+
+        url:
+          type: string
+          format: uri
+
+        created_at:
+          type: string
+          format: date-time
 
     ApartmentNotFound:
       type: object

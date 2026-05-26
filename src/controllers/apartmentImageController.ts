@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { apartmentImageSchema } from '../validators/apartmentImageValidator';
 import { insertApartmentImage, 
          fetchApartmentImages,
-         fetchImagesByApartmentId,
          storeApartmentImage,
          deleteApartmentImage
         } from '../services/apartmentImageService';
@@ -47,27 +46,6 @@ export const getImages = async (req: Request, res: Response) => {
 
         console.error("❌ GET IMAGES ERROR:", error.message);
         return res.status(500).json({ message: "Image not found" });
-    }
-};
-
-// 🔥 GET BY APARTMENT ID
-export const getImagesByApartment = async (req: Request, res: Response) => {
-
-    try {
-
-        const { apartmentId } = req.params;
-
-        const images = await fetchImagesByApartmentId(apartmentId as string);
-
-        if (!images || images.length === 0) {
-            return res.status(404).json({ message: "No images found" });
-        }
-
-        return res.json(images);
-
-    } catch (error: any) {
-        console.error("❌ GET IMAGES BY APARTMENT ERROR:", error.message);
-        return res.status(500).json({ message: "Internal serwer error" });
     }
 };
 

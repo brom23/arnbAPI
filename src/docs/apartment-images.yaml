@@ -113,50 +113,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
 
-  /apartment-images/{apartmentId}:
-    get:
-      tags:
-        - apartment-images
-      summary: Get images by apartment ID
-
-      parameters:
-        - name: apartmentId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-
-      responses:
-        200:
-          description: Apartment images
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ApartmentImage"
-
-        404:
-          description: Images not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ImageNotFound"
-
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
-
   /apartment-images/{id}:
     delete:
       tags:
         - apartment-images
 
-      summary: Delete apartment image
+      summary: Delete image by id
       description: Admin only (requires JWT + role check in backend)
 
       security:

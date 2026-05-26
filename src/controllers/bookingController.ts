@@ -6,7 +6,9 @@ import {
   insertBooking,
   checkApartmentAvailability,
   updateBooking,
-  deleteBooking
+  updateBookingStatus,
+  deleteBooking,
+  fetchBookingsByApartmentId
 } from "../services/bookingService";
 
 export const getBookings = async (req: Request, res: Response) => {
@@ -247,6 +249,101 @@ export const deleteBookingById = async (
 
     console.error(
       "❌ DELETE BOOKING ERROR:",
+      error.message
+    );
+
+    return res.status(500).json({
+      error: "Internal server error"
+    });
+  }
+};
+
+export const updateBookingStatusById = async (
+  req: Request,
+  res: Response
+) => {
+
+  const { id } = req.params;
+  const { status } = req.body;
+
+  console.log(`📥 PATCH /bookings/${id}/status`);
+  console.log("BODY:", req.body);
+
+  const allowedStatuses = [
+    "pending",
+    "confirmed",
+    "cancelled",
+    "completed"
+  ];
+
+  if (!status) {
+    return res.status(400).json({
+      message: "status is required"
+    });
+  }
+
+  if (!allowedStatuses.includes(status)) {
+    return res.status(400).json({
+      message: "Invalid status value",
+      allowedStatuses
+    });
+  }
+
+  try {
+
+    const booking = await fetchBookingById(id as string);
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found"
+      });
+    }
+
+    const updated = await updateBookingStatus(
+      id as string,
+      status
+    );
+
+    return res.status(200).json(updated);
+
+  } catch (error: any) {
+
+    console.error(
+      "❌ UPDATE BOOKING STATUS ERROR:",
+      error.message
+    );
+
+    return res.status(500).json({
+      error: "Internal server error"
+    });
+  }
+};
+
+export const getBookingsByApartmentId = async (
+  req: Request,
+  res: Response
+) => {
+
+  const { id } = req.params;
+
+  console.log(`📥 GET /bookings/apartment/${id}`);
+
+  try {
+
+    const bookings = await fetchBookingsByApartmentId(id as string);
+
+    if (!bookings || bookings.length === 0) {
+      return res.status(404).json({
+        message: "No bookings found for this apartment"
+      });
+    }
+
+    return res.json(bookings);
+
+  } catch (error: any) {
+
+    console.error(
+      "❌ GET BOOKINGS BY APARTMENT ERROR:",
       error.message
     );
 

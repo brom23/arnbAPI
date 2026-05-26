@@ -257,6 +257,129 @@ paths:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
 
+  /bookings/{id}/status:
+    patch:
+      tags:
+        - bookings
+
+      summary: Update booking status
+      description: Admin only (requires JWT + role check in backend)
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Booking ID
+          schema:
+            type: string
+            format: uuid
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  example: confirmed
+                  enum:
+                    - pending
+                    - confirmed
+                    - cancelled
+                    - completed
+
+      responses:
+        200:
+          description: Booking status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+
+        401:
+          description: Unauthorized
+
+        403:
+          description: Forbidden (admin only)
+
+        404:
+          description: Booking not found
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+
+  /bookings/apartment/{id}:
+    get:
+      tags:
+        - bookings
+
+      summary: Get bookings by apartment ID
+      description: Returns all bookings for a specific apartment (admin only)
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Apartment ID
+          schema:
+            type: string
+            format: uuid
+
+      responses:
+        200:
+          description: List of bookings for apartment
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+
+        404:
+          description: No bookings found for this apartment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No bookings found for this apartment
+
+        401:
+          description: Unauthorized
+
+        403:
+          description: Forbidden (admin only)
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+                
 components:
 
   securitySchemes:

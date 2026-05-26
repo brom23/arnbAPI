@@ -46,6 +46,9 @@ paths:
 
   /apartments/{id}/cover:
     $ref: "./apartments.yaml#/paths/~1apartments~1{id}~1cover"
+  
+  /apartments/{id}/images:
+    $ref: "./apartments.yaml#/paths/~1apartments~1{id}~1images"
 
   /apartments/{id}/bookings/unavailable-dates:
     $ref: "./apartments.yaml#/paths/~1apartments~1{id}~1bookings~1unavailable-dates"
@@ -56,16 +59,19 @@ paths:
   # 📅 BOOKINGS
   /bookings:
     $ref: "./bookings.yaml#/paths/~1bookings"
+  
+  /bookings/{id}/status:
+    $ref: "./bookings.yaml#/paths/~1bookings~1{id}~1status"
 
   /bookings/{id}:
     $ref: "./bookings.yaml#/paths/~1bookings~1{id}"
 
+  /bookings/apartment/{id}:
+    $ref: "./bookings.yaml#/paths/~1bookings~1apartment~1{id}"
+
   # 🖼️ IMAGES
   /apartment-images:
     $ref: "./apartment-images.yaml#/paths/~1apartment-images"
-
-  /apartment-images/{apartmentId}:
-    $ref: "./apartment-images.yaml#/paths/~1apartment-images~1{apartmentId}"
   
   /apartment-images/upload:
     $ref: "./apartment-images.yaml#/paths/~1apartment-images~1upload"
