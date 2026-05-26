@@ -1,109 +1,88 @@
-import { Request, Response } from 'express';
-import { apartmentImageSchema } from '../validators/apartmentImageValidator';
-import { insertApartmentImage, 
-         fetchApartmentImages,
-         storeApartmentImage,
-         deleteApartmentImage
-        } from '../services/apartmentImageService';
+import { Request, Response } from "express";
 
-export const createApartmentImage = async (req: Request, res: Response) => {
+import { apartmentImageSchema } from "../validators/apartmentImageValidator";
+
+import {
+  insertApartmentImage,
+  fetchApartmentImages,
+  storeApartmentImage,
+  deleteApartmentImage
+} from "../services/apartmentImageService";
+
+import { AppError } from "../utils/AppError";
+import { asyncHandler } from "../utils/asyncHandler";
+
+export const createApartmentImage = asyncHandler(
+  async (req: Request, res: Response) => {
 
     console.log("📥 POST /apartment-images BODY:", req.body);
 
     const result = apartmentImageSchema.safeParse(req.body);
 
     if (!result.success) {
-        return res.status(400).json({
-            message: "Validation error",
-            errors: result.error.issues.map(e => ({
-                field: e.path[0],
-                message: e.message
-            }))
-        });
+      throw result.error; // 🔥 KLUCZOWE
     }
 
-    try {
-        const image = await insertApartmentImage(result.data);
-        return res.status(201).json(image);
-    } catch (error: any) {
-        console.error("❌ CREATE IMAGE ERROR:", error.message);
-        return res.status(404).json({ message: "Image not found" });
+    const image = await insertApartmentImage(result.data);
+
+    return res.status(201).json(image);
+  }
+);
+
+export const getImages = asyncHandler(
+  async (req: Request, res: Response) => {
+
+    const images = await fetchApartmentImages();
+
+    if (!images || images.length === 0) {
+      throw new AppError("Image not found", 404);
     }
-};
 
-export const getImages = async (req: Request, res: Response) => {
+    return res.json(images);
+  }
+);
 
-    try {
+export const uploadApartmentImage = asyncHandler(
+  async (req: Request, res: Response) => {
 
-        const images = await fetchApartmentImages();
-        if (!images || images.length === 0) {
-            return res.status(404).json({ message: "Image not found" });
-        }
-
-        return res.json(images);
-
-    } catch (error: any) {
-
-        console.error("❌ GET IMAGES ERROR:", error.message);
-        return res.status(500).json({ message: "Image not found" });
-    }
-};
-
-export const uploadApartmentImage = async (
-  req: Request,
-  res: Response
-) => {
-  try {
     const file = req.file;
     const { apartmentId } = req.body;
 
     console.log("📥 POST /apartment-images BODY:", req.body);
     console.log("📥 POST /apartment-images FILE:", file);
-    
+
+    if (!file) {
+      throw new AppError("File is required", 400);
+    }
+
+    if (!apartmentId) {
+      throw new AppError("apartmentId is required", 400);
+    }
+
     const result = await storeApartmentImage(
       file as Express.Multer.File,
       apartmentId as string
     );
 
     return res.status(201).json(result);
-
-  } catch (error: any) {
-    console.error("❌ UPLOAD ERROR:", error.message);
-
-    return res.status(500).json({
-      message: "Internal server error",
-    });
   }
-};
+);
 
-export const removeApartmentImage = async (
-  req: Request,
-  res: Response
-) => {
-
-  try {
+export const removeApartmentImage = asyncHandler(
+  async (req: Request, res: Response) => {
 
     const { id } = req.params;
 
     console.log(`📥 DELETE /apartment-images/${id}`);
+
+    if (!id) {
+      throw new AppError("Image id is required", 400);
+    }
 
     await deleteApartmentImage(id as string);
 
     return res.status(200).json({
       message: "Image deleted successfully"
     });
-
-  } catch (error: any) {
-
-    console.error(
-      "❌ DELETE IMAGE ERROR:",
-      error.message
-    );
-
-    return res.status(500).json({
-      message: "Internal server error"
-    });
-
   }
-
-};
+);

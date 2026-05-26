@@ -1,7 +1,10 @@
 import os from "os";
 import app, { registeredRoutes } from "./app";
+import { errorHandler } from "./middleware/errorHandler";
 
 const PORT = process.env.SERVER_PORT || 3030;
+
+app.use(errorHandler);
 
 const server = app.listen(PORT, () => {
   const localIp = getLocalIp();

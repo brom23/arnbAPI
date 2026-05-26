@@ -12,9 +12,7 @@ const router = Router();
 
 router.get('/', getImages);
 
-//router.get('/:apartmentId', getImagesByApartment);
-
-router.post('/', createApartmentImage);
+router.post('/', authenticate, requireAdmin,createApartmentImage);
 router.post('/upload', upload.single("image"),uploadApartmentImage);
 
 router.delete('/:id', authenticate, requireAdmin, removeApartmentImage);

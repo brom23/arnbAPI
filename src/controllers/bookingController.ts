@@ -1,7 +1,8 @@
-import { Request, Response } from 'express';
-import { bookingSchema } from '../validators/bookingValidator';
+import { Request, Response } from "express";
+
+import { bookingSchema } from "../validators/bookingValidator";
+
 import {
-  fetchBookings,
   fetchBookingById,
   insertBooking,
   checkApartmentAvailability,
@@ -12,39 +13,15 @@ import {
   fetchBookingsPaginated
 } from "../services/bookingService";
 
-import { getPagination } from '../utils/pagination';
+import { getPagination } from "../utils/pagination";
 
-// export const getBookings = async (req: Request, res: Response) => {
+import { AppError } from "../utils/AppError";
+import { asyncHandler } from "../utils/asyncHandler";
 
-//     console.log("📥 GET /bookings");
+export const getBookings = asyncHandler(
+  async (req: Request, res: Response) => {
 
-//     try {
-
-//         const bookings = await fetchBookings();
-
-
-//         if (!bookings || bookings.length === 0) {
-//             return res.status(404).json({
-//                 message: "Booking not found"
-//             });
-//         }
-//         return res.json(bookings);
-
-//     } catch (error: any) {
-
-//         console.error("❌ GET BOOKINGS ERROR:", error.message);
-
-//         return res.status(500).json({
-//             error: "Internal server error"
-//         });
-//     }
-// };
-
-export const getBookings = async (req: Request, res: Response) => {
-
-  console.log("📥 GET /bookings", req.query);
-
-  try {
+    console.log("📥 GET /bookings", req.query);
 
     const { page, limit } = getPagination(req.query);
 
@@ -59,134 +36,86 @@ export const getBookings = async (req: Request, res: Response) => {
     });
 
     return res.json(result);
-
-  } catch (error: any) {
-
-    console.error("❌ GET BOOKINGS ERROR:", error.message);
-
-    return res.status(500).json({
-      error: "Internal server error"
-    });
   }
-};
+);
 
-export const getBookingById = async (req: Request, res: Response) => {
+export const getBookingById = asyncHandler(
+  async (req: Request, res: Response) => {
 
     const { id } = req.params;
 
-    try {
+    const booking = await fetchBookingById(id as string);
 
-        const booking = await fetchBookingById(id as string);
-
-        if (!booking) {
-            return res.status(404).json({
-                message: "Booking not found"
-            });
-        }
-
-        return res.json(booking);
-
-    } catch (error: any) {
-
-        console.error("❌ GET BOOKING BY ID ERROR:", error.message);
-
-        return res.status(500).json({
-            error: "Internal server error"
-        });
+    if (!booking) {
+      throw new AppError("Booking not found", 404);
     }
-};
 
-export const createBooking = async (req: Request, res: Response) => {
+    return res.json(booking);
+  }
+);
+
+export const createBooking = asyncHandler(
+  async (req: Request, res: Response) => {
 
     console.log("📥 POST /bookings BODY:", req.body);
 
     const result = bookingSchema.safeParse(req.body);
 
     if (!result.success) {
-        return res.status(400).json({
-            message: "Validation error",
-            errors: result.error.issues.map(e => ({
-                field: e.path[0],
-                message: e.message
-            }))
-        });
+      throw result.error;
     }
 
-    try {
-
-        // 🔥 DATE VALIDATION
-        if (
-            new Date(result.data.check_out) <=
-            new Date(result.data.check_in)
-        ) {
-            return res.status(400).json({
-                message: "check_out must be after check_in"
-            });
-        }
-
-        // 🔥 AVAILABILITY CHECK
-        const conflicts = await checkApartmentAvailability(
-            result.data.apartment_id,
-            result.data.check_in,
-            result.data.check_out
-        );
-
-        if (conflicts.length > 0) {
-            return res.status(409).json({
-                message: "Apartment is not available for selected dates"
-            });
-        }
-
-        const booking = await insertBooking(result.data);
-
-        console.log("✅ BOOKING CREATED:", booking);
-
-        return res.status(201).json(booking);
-
-    } catch (error: any) {
-
-        console.error("❌ CREATE BOOKING ERROR:", error.message);
-
-        return res.status(500).json({
-            error: "Internal server error"
-        });
+    if (
+      new Date(result.data.check_out) <=
+      new Date(result.data.check_in)
+    ) {
+      throw new AppError(
+        "check_out must be after check_in",
+        400
+      );
     }
-};
 
-export const updateBookingById = async (
-  req: Request,
-  res: Response
-) => {
+    const conflicts = await checkApartmentAvailability(
+      result.data.apartment_id,
+      result.data.check_in,
+      result.data.check_out
+    );
 
-  const { id } = req.params;
+    if (conflicts.length > 0) {
+      throw new AppError(
+        "Apartment is not available for selected dates",
+        409
+      );
+    }
 
-  console.log(`📥 PATCH /bookings/${id}`);
-  console.log("BODY:", req.body);
+    const booking = await insertBooking(result.data);
 
-  const result = bookingSchema.partial().safeParse(req.body);
+    console.log("✅ BOOKING CREATED:", booking);
 
-  if (!result.success) {
-    return res.status(400).json({
-      message: "Validation error",
-      errors: result.error.issues.map(e => ({
-        field: e.path[0],
-        message: e.message
-      }))
-    });
+    return res.status(201).json(booking);
   }
+);
 
-  try {
+export const updateBookingById = asyncHandler(
+  async (req: Request, res: Response) => {
 
-    // 🔥 booking exists
+    const { id } = req.params;
+
+    console.log(`📥 PATCH /bookings/${id}`);
+    console.log("BODY:", req.body);
+
+    const result = bookingSchema.partial().safeParse(req.body);
+
+    if (!result.success) {
+      throw result.error;
+    }
+
     const existingBooking = await fetchBookingById(id as string);
 
     if (!existingBooking) {
-      return res.status(404).json({
-        message: "Booking not found"
-      });
+      throw new AppError("Booking not found", 404);
     }
 
-    // 🔥 date validation
     const checkIn =
       result.data.check_in || existingBooking.check_in;
 
@@ -197,12 +126,12 @@ export const updateBookingById = async (
       new Date(checkOut) <=
       new Date(checkIn)
     ) {
-      return res.status(400).json({
-        message: "check_out must be after check_in"
-      });
+      throw new AppError(
+        "check_out must be after check_in",
+        400
+      );
     }
 
-    // 🔥 availability validation
     if (
       result.data.check_in ||
       result.data.check_out ||
@@ -220,16 +149,15 @@ export const updateBookingById = async (
           checkOut
         );
 
-      // pomijamy aktualny booking
       const filteredConflicts = conflicts.filter(
         (booking: any) => booking.id !== id
       );
 
       if (filteredConflicts.length > 0) {
-        return res.status(409).json({
-          message:
-            "Apartment is not available for selected dates"
-        });
+        throw new AppError(
+          "Apartment is not available for selected dates",
+          409
+        );
       }
     }
 
@@ -239,37 +167,20 @@ export const updateBookingById = async (
     );
 
     return res.status(200).json(updatedBooking);
-
-  } catch (error: any) {
-
-    console.error(
-      "❌ UPDATE BOOKING ERROR:",
-      error.message
-    );
-
-    return res.status(500).json({
-      error: "Internal server error"
-    });
   }
-};
+);
 
-export const deleteBookingById = async (
-  req: Request,
-  res: Response
-) => {
+export const deleteBookingById = asyncHandler(
+  async (req: Request, res: Response) => {
 
-  const { id } = req.params;
+    const { id } = req.params;
 
-  console.log(`📥 DELETE /bookings/${id}`);
-
-  try {
+    console.log(`📥 DELETE /bookings/${id}`);
 
     const booking = await fetchBookingById(id as string);
 
     if (!booking) {
-      return res.status(404).json({
-        message: "Booking not found"
-      });
+      throw new AppError("Booking not found", 404);
     }
 
     await deleteBooking(id as string);
@@ -277,59 +188,37 @@ export const deleteBookingById = async (
     return res.status(200).json({
       message: "Booking deleted successfully"
     });
-
-  } catch (error: any) {
-
-    console.error(
-      "❌ DELETE BOOKING ERROR:",
-      error.message
-    );
-
-    return res.status(500).json({
-      error: "Internal server error"
-    });
   }
-};
+);
 
-export const updateBookingStatusById = async (
-  req: Request,
-  res: Response
-) => {
+export const updateBookingStatusById = asyncHandler(
+  async (req: Request, res: Response) => {
 
-  const { id } = req.params;
-  const { status } = req.body;
+    const { id } = req.params;
+    const { status } = req.body;
 
-  console.log(`📥 PATCH /bookings/${id}/status`);
-  console.log("BODY:", req.body);
+    console.log(`📥 PATCH /bookings/${id}/status`);
+    console.log("BODY:", req.body);
 
-  const allowedStatuses = [
-    "pending",
-    "confirmed",
-    "cancelled",
-    "completed"
-  ];
+    const allowedStatuses = [
+      "pending",
+      "confirmed",
+      "cancelled",
+      "completed"
+    ];
 
-  if (!status) {
-    return res.status(400).json({
-      message: "status is required"
-    });
-  }
+    if (!status) {
+      throw new AppError("status is required", 400);
+    }
 
-  if (!allowedStatuses.includes(status)) {
-    return res.status(400).json({
-      message: "Invalid status value",
-      allowedStatuses
-    });
-  }
-
-  try {
+    if (!allowedStatuses.includes(status)) {
+      throw new AppError("Invalid status value", 400);
+    }
 
     const booking = await fetchBookingById(id as string);
 
     if (!booking) {
-      return res.status(404).json({
-        message: "Booking not found"
-      });
+      throw new AppError("Booking not found", 404);
     }
 
     const updated = await updateBookingStatus(
@@ -338,50 +227,27 @@ export const updateBookingStatusById = async (
     );
 
     return res.status(200).json(updated);
+  }
+);
 
-  } catch (error: any) {
+export const getBookingsByApartmentId = asyncHandler(
+  async (req: Request, res: Response) => {
 
-    console.error(
-      "❌ UPDATE BOOKING STATUS ERROR:",
-      error.message
+    const { id } = req.params;
+
+    console.log(`📥 GET /bookings/apartment/${id}`);
+
+    const bookings = await fetchBookingsByApartmentId(
+      id as string
     );
 
-    return res.status(500).json({
-      error: "Internal server error"
-    });
-  }
-};
-
-export const getBookingsByApartmentId = async (
-  req: Request,
-  res: Response
-) => {
-
-  const { id } = req.params;
-
-  console.log(`📥 GET /bookings/apartment/${id}`);
-
-  try {
-
-    const bookings = await fetchBookingsByApartmentId(id as string);
-
     if (!bookings || bookings.length === 0) {
-      return res.status(404).json({
-        message: "No bookings found for this apartment"
-      });
+      throw new AppError(
+        "No bookings found for this apartment",
+        404
+      );
     }
 
     return res.json(bookings);
-
-  } catch (error: any) {
-
-    console.error(
-      "❌ GET BOOKINGS BY APARTMENT ERROR:",
-      error.message
-    );
-
-    return res.status(500).json({
-      error: "Internal server error"
-    });
   }
-};
+);

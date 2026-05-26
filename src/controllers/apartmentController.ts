@@ -1,8 +1,9 @@
-import { Request, Response } from 'express';
-import { getDatesBetween } from '../utils/dates';
-import { apartmentSchema } from '../validators/apartmentValidator';
+import { Request, Response } from "express";
+
+import { getDatesBetween } from "../utils/dates";
+import { apartmentSchema } from "../validators/apartmentValidator";
+
 import {
-  fetchApartments,
   fetchApartmentById,
   fetchApartmentBookings,
   insertApartment,
@@ -10,68 +11,32 @@ import {
   updateApartmentCoverByImage,
   deleteApartmentById,
   fetchImagesByApartmentId,
-  fetchApartmentsPaginated,
   fetchAvailableApartments
-} from '../services/apartmentService';
+} from "../services/apartmentService";
 
-// export const getApartaments = async (req: Request, res: Response) => {
+import { AppError } from "../utils/AppError";
+import { asyncHandler } from "../utils/asyncHandler";
 
-//   console.log("📥 GET /apartments/");
+export const getApartmentById = asyncHandler(
+  async (req: Request, res: Response) => {
 
-//   try {
-//     const data = await fetchApartments();   
-
-//     if (!data || data.length === 0) {
-//       return res.status(404).json({
-//         message: "No apartments found"
-//       });
-//     }
-
-//     res.json(data);
-
-//   } catch (error: any) {
-
-//     console.error("❌ GET APARTMENTS ERROR:", error.message);
-//     return res.status(500).json({
-//       message: "Internal server error",
-//     });
-//   }
-// };
-
-export const getApartmentById = async (
-  req: Request,
-  res: Response
-) => {
-  try {
     const { id } = req.params;
-
-    const apartment = await fetchApartmentById(id as string);
 
     console.log("📥 GET /apartments/", id);
 
+    const apartment = await fetchApartmentById(id as string);
+
     if (!apartment) {
-      return res.status(404).json({
-        message: "Apartment not found",
-      });
+      throw new AppError("Apartment not found", 404);
     }
 
     return res.json(apartment);
-
-  } catch (error: any) {
-
-    console.error("❌ GET APARTMENTS BY ID ERROR:", error.message);
-
-    return res.status(500).json({
-      message: "Internal server error",
-    });
   }
-};
+);
 
-export const searchApartments = async (
-  req: Request,
-  res: Response
-) => {
-  try {
+export const searchApartments = asyncHandler(
+  async (req: Request, res: Response) => {
+
     const { city, from, to, guests } = req.query;
 
     console.log(
@@ -79,74 +44,40 @@ export const searchApartments = async (
     );
 
     if (!city && !from && !to && !guests) {
-      return res.status(400).json({
-        message:
-          "At least one search parameter is required",
-      });
+      throw new AppError(
+        "At least one search parameter is required",
+        400
+      );
     }
 
     if ((from && !to) || (!from && to)) {
-      return res.status(400).json({
-        message:
-          "Both 'from' and 'to' must be provided together",
-      });
+      throw new AppError(
+        "Both 'from' and 'to' must be provided together",
+        400
+      );
     }
 
-    const data = await fetchApartments();
-
-    const filteredApartments = data.filter((apartment) => {
-      let isValid = true;
-
-      // CITY
-      if (city) {
-        isValid =
-          isValid &&
-          apartment.city.toLowerCase() ===
-          String(city).toLowerCase();
-      }
-
-      // GUESTS
-      if (guests) {
-        isValid =
-          isValid &&
-          Number(apartment.guests) >=
-          Number(guests);
-      }
-
-      // DATE (na razie tylko placeholder)
-      if (from && to) {
-        isValid = isValid && true;
-        // tutaj później logika dostępności
-      }
-
-      return isValid;
+    const data = await fetchAvailableApartments({
+      page: 1,
+      limit: 1000,
+      from: from as string,
+      to: to as string,
+      city: city as string,
+      guests: guests ? Number(guests) : undefined
     });
 
-    console.log("filtered apartments:", filteredApartments);
-
-    return res.json(filteredApartments);
-  } catch (error: any) {
-
-    console.error("❌ GET SEARCH APARTMENTS ERROR:", error.message);
-
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+    return res.json(data);
   }
-};
+);
 
-export const getUnavailableDates = async (
-  req: Request,
-  res: Response
-) => {
-  try {
+export const getUnavailableDates = asyncHandler(
+  async (req: Request, res: Response) => {
+
     const { id } = req.params;
 
     console.log(`📥 GET /apartments/${id}/bookings/unavailable-dates`);
 
-    const today = new Date()
-      .toISOString()
-      .split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
 
     const bookings = await fetchApartmentBookings(
       id as string,
@@ -161,146 +92,82 @@ export const getUnavailableDates = async (
         booking.check_out
       );
 
-      dates.forEach((date) => {
-        unavailableDates.add(date);
-      });
+      dates.forEach((date) => unavailableDates.add(date));
     });
 
-    return res.status(200).json({
+    return res.json({
       apartmentId: id,
-      unavailableDates: Array.from(
-        unavailableDates
-      ).sort()
-    });
-
-  } catch (error: any) {
-
-    console.error("❌ GET UNAVAILABLE DATES ERROR:", error.message);
-    return res.status(500).json({
-      message: "Internal server error",
+      unavailableDates: Array.from(unavailableDates).sort()
     });
   }
-};
+);
 
-export const createApartment = async (
-  req: Request,
-  res: Response
-) => {
+export const createApartment = asyncHandler(
+  async (req: Request, res: Response) => {
 
-  console.log("📥 POST /api/v1/apartments");
+    console.log("📥 POST /apartments");
 
-  console.log("📦 BODY:");
-  console.log(JSON.stringify(req.body, null, 2));
+    const result = apartmentSchema.safeParse(req.body);
 
-  // 🔴 WALIDACJA
-  const result = apartmentSchema.safeParse(req.body);
-
-  if (!result.success) {
-
-    return res.status(400).json({
-      message: 'Validation error',
-      errors: result.error.format()
-    });
-  }
-
-  try {
+    if (!result.success) {
+      throw new AppError("Validation error", 400);
+    }
 
     const apartment = await insertApartment(result.data);
 
     return res.status(201).json(apartment);
-
-  } catch (error: any) {
-
-    console.error("❌ CREATE APARTMENT ERROR:", error.message);
-
-    return res.status(500).json({
-      error: "Internal server error"
-    });
   }
-};
+);
 
-export const updateApartment = async (req: Request, res: Response) => {
+export const updateApartment = asyncHandler(
+  async (req: Request, res: Response) => {
 
-  const { id } = req.params;
+    const { id } = req.params;
 
-  const apartmentId = Array.isArray(id) ? id[0] : id;
+    console.log("✏️ PATCH /apartments:", id);
 
-  console.log("✏️ PATCH /apartments:", id);
-  console.log("BODY:", req.body);
+    const result = apartmentSchema.partial().safeParse(req.body);
 
-  // partial validation (PATCH = tylko część pól)
-  const result = apartmentSchema.partial().safeParse(req.body);
+    if (!result.success) {
+      throw new AppError("Validation error", 400);
+    }
 
-  if (!result.success) {
-    return res.status(400).json({
-      message: 'Validation error',
-      errors: result.error.issues.map(e => ({
-        field: e.path[0],
-        message: e.message
-      }))
-    });
-  }
-
-  try {
-
-    const updated = await updateApartmentById(apartmentId, result.data);
+    const updated = await updateApartmentById(
+      id as string,
+      result.data
+    );
 
     return res.json(updated);
-
-  } catch (error: any) {
-
-    console.error("❌ UPDATE APARTMENT ERROR:", error.message);
-
-    return res.status(500).json({
-      error: "Internal server error"
-    });
   }
-};
+);
 
-export async function deleteApartment(req: Request,
-  res: Response) {
+export const deleteApartment = asyncHandler(
+  async (req: Request, res: Response) => {
 
-  const { id } = req.params;
-
-  try {
+    const { id } = req.params;
 
     const apartment = await deleteApartmentById(id as string);
 
-    if (apartment.length === 0) {
-      return res.status(404).json({
-        message: "Apartment not found"
-      });
+    if (!apartment || apartment.length === 0) {
+      throw new AppError("Apartment not found", 404);
     }
 
-    return res.json({ "message": "Apartment deleted successfully" });
-
-  } catch (error: any) {
-
-    console.error("❌ DELETE APARTMENT ERROR:", error.message);
-
-    return res.status(500).json({
-      error: "Internal server error"
+    return res.json({
+      message: "Apartment deleted successfully"
     });
   }
-}
+);
 
-export const updateApartmentCover = async (
-  req: Request,
-  res: Response
-) => {
-
-  try {
+export const updateApartmentCover = asyncHandler(
+  async (req: Request, res: Response) => {
 
     const { id } = req.params;
     const { imageId } = req.body;
 
     console.log(`📥 PATCH /apartments/${id}/cover`);
-    console.log("BODY:", req.body);
 
     if (!imageId) {
-      return res.status(400).json({
-        message: "imageId is required"
-      });
+      throw new AppError("imageId is required", 400);
     }
 
     const apartment = await updateApartmentCoverByImage(
@@ -308,49 +175,39 @@ export const updateApartmentCover = async (
       imageId
     );
 
-    return res.status(200).json(apartment);
+    return res.json(apartment);
+  }
+);
 
-  } catch (error: any) {
+export const getImagesByApartment = asyncHandler(
+  async (req: Request, res: Response) => {
 
-    console.error(
-      "❌ UPDATE APARTMENT COVER ERROR:",
-      error.message
+    const { apartmentId } = req.params;
+
+    const images = await fetchImagesByApartmentId(
+      apartmentId as string
     );
 
-    return res.status(500).json({
-      message: "Internal server error"
-    });
-
-  }
-
-};
-
-export const getImagesByApartment = async (req: Request, res: Response) => {
-
-    try {
-
-        const { apartmentId } = req.params;
-
-        const images = await fetchImagesByApartmentId(apartmentId as string);
-
-        if (!images || images.length === 0) {
-            return res.status(404).json({ message: "No images found" });
-        }
-
-        return res.json(images);
-
-    } catch (error: any) {
-        console.error("❌ GET IMAGES BY APARTMENT ERROR:", error.message);
-        return res.status(500).json({ message: "Internal serwer error" });
+    if (!images || images.length === 0) {
+      throw new AppError("No images found", 404);
     }
-};
 
-export const getApartments = async (req: Request, res: Response) => {
+    return res.json(images);
+  }
+);
 
-  try {
+export const getApartments = asyncHandler(
+  async (req: Request, res: Response) => {
 
-    const page = Math.max(parseInt(req.query.page as string) || 1, 1);
-    const limit = Math.min(parseInt(req.query.limit as string) || 10, 100);
+    const page = Math.max(
+      parseInt(req.query.page as string) || 1,
+      1
+    );
+
+    const limit = Math.min(
+      parseInt(req.query.limit as string) || 10,
+      100
+    );
 
     const result = await fetchAvailableApartments({
       page,
@@ -364,13 +221,5 @@ export const getApartments = async (req: Request, res: Response) => {
     });
 
     return res.json(result);
-
-  } catch (error: any) {
-
-    console.error("❌ GET APARTMENTS ERROR:", error.message);
-
-    return res.status(500).json({
-      error: "Internal server error"
-    });
   }
-};
+);
