@@ -8,33 +8,66 @@ import {
   updateBooking,
   updateBookingStatus,
   deleteBooking,
-  fetchBookingsByApartmentId
+  fetchBookingsByApartmentId,
+  fetchBookingsPaginated
 } from "../services/bookingService";
+
+import { getPagination } from '../utils/pagination';
+
+// export const getBookings = async (req: Request, res: Response) => {
+
+//     console.log("📥 GET /bookings");
+
+//     try {
+
+//         const bookings = await fetchBookings();
+
+
+//         if (!bookings || bookings.length === 0) {
+//             return res.status(404).json({
+//                 message: "Booking not found"
+//             });
+//         }
+//         return res.json(bookings);
+
+//     } catch (error: any) {
+
+//         console.error("❌ GET BOOKINGS ERROR:", error.message);
+
+//         return res.status(500).json({
+//             error: "Internal server error"
+//         });
+//     }
+// };
 
 export const getBookings = async (req: Request, res: Response) => {
 
-    console.log("📥 GET /bookings");
+  console.log("📥 GET /bookings", req.query);
 
-    try {
+  try {
 
-        const bookings = await fetchBookings();
+    const { page, limit } = getPagination(req.query);
 
+    const result = await fetchBookingsPaginated({
+      page,
+      limit,
+      status: req.query.status as string,
+      apartment_id: req.query.apartment_id as string,
+      email: req.query.email as string,
+      fromDate: req.query.fromDate as string,
+      toDate: req.query.toDate as string
+    });
 
-        if (!bookings || bookings.length === 0) {
-            return res.status(404).json({
-                message: "Booking not found"
-            });
-        }
-        return res.json(bookings);
+    return res.json(result);
 
-    } catch (error: any) {
+  } catch (error: any) {
 
-        console.error("❌ GET BOOKINGS ERROR:", error.message);
+    console.error("❌ GET BOOKINGS ERROR:", error.message);
 
-        return res.status(500).json({
-            error: "Internal server error"
-        });
-    }
+    return res.status(500).json({
+      error: "Internal server error"
+    });
+  }
 };
 
 export const getBookingById = async (req: Request, res: Response) => {

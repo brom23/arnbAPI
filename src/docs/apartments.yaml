@@ -4,23 +4,100 @@ paths:
     get:
       tags:
         - apartments
-      summary: Get all apartments
-      responses:
-        200:
-          description: List of apartments
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Apartment"
 
-        404:
-          description: No apartments found
+      summary: Get apartments (paginated)
+
+      description: |
+        Returns paginated apartments list.
+
+        Supports:
+        - pagination
+        - city filtering
+        - guests filtering
+        - availability filtering by date range
+
+        Example:
+        /apartments?from=2026-06-01&to=2026-06-07
+
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
+
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 10
+
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+            example: Kraków
+
+        - name: guests
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 2
+
+        - name: from
+          in: query
+          required: false
+          description: Check-in date used for apartment availability filtering
+          schema:
+            type: string
+            format: date
+            example: 2026-06-01
+
+        - name: to
+          in: query
+          required: false
+          description: Check-out date used for apartment availability filtering
+          schema:
+            type: string
+            format: date
+            example: 2026-06-07
+
+    responses:
+        200:
+          description: Paginated apartments list
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/NotFoundResponse"
+                type: object
+
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Apartment"
+
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+
+                      limit:
+                        type: integer
+                        example: 10
+
+                      total:
+                        type: integer
+                        example: 42
+
+                      totalPages:
+                        type: integer
+                        example: 5
 
         500:
           description: Internal server error

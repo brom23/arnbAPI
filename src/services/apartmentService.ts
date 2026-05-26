@@ -215,3 +215,124 @@ export const fetchImagesByApartmentId = async (apartmentId: string) => {
 
     return data;
 };
+
+export const fetchApartmentsPaginated = async (params: {
+  page: number;
+  limit: number;
+  city?: string;
+  guests?: number;
+}) => {
+
+  const { page, limit, city, guests } = params;
+
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  let query = supabase
+    .from("apartments")
+    .select("*", { count: "exact" });
+
+  // 🔎 filters
+  if (city) {
+    query = query.ilike("city", `%${city}%`);
+  }
+
+  if (guests) {
+    query = query.gte("guests", guests);
+  }
+
+  // 📄 pagination
+  query = query.range(from, to);
+
+  // 📊 sort (default newest)
+  query = query.order("created_at", { ascending: false });
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total: count || 0,
+      totalPages: Math.ceil((count || 0) / limit)
+    }
+  };
+};
+
+export const fetchAvailableApartments = async (params: {
+  page: number;
+  limit: number;
+  from?: string;
+  to?: string;
+  city?: string;
+  guests?: number;
+}) => {
+
+  const { page, limit, from, to, city, guests } = params;
+
+  const offset = (page - 1) * limit;
+
+  // 1. znajdź konflikty bookingów
+  let bookedApartmentIds: string[] = [];
+
+  if (from && to) {
+
+    const { data: conflicts, error } = await supabase
+      .from("bookings")
+      .select("apartment_id")
+      .lt("check_in", to)
+      .gt("check_out", from);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    bookedApartmentIds =
+      conflicts?.map(b => b.apartment_id) || [];
+  }
+
+  // 2. apartments query
+  let query = supabase
+    .from("apartments")
+    .select("*", { count: "exact" });
+
+  if (city) {
+    query = query.ilike("city", `%${city}%`);
+  }
+
+  if (guests) {
+    query = query.gte("guests", guests);
+  }
+
+  if (bookedApartmentIds.length > 0) {
+    query = query.not(
+      "id",
+      "in",
+      `(${bookedApartmentIds.join(",")})`
+    );
+  }
+
+  query = query.range(offset, offset + limit - 1);
+  query = query.order("created_at", { ascending: false });
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total: count || 0,
+      totalPages: Math.ceil((count || 0) / limit)
+    }
+  };
+};

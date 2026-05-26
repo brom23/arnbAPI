@@ -9,32 +9,34 @@ import {
   updateApartmentById,
   updateApartmentCoverByImage,
   deleteApartmentById,
-  fetchImagesByApartmentId
+  fetchImagesByApartmentId,
+  fetchApartmentsPaginated,
+  fetchAvailableApartments
 } from '../services/apartmentService';
 
-export const getApartaments = async (req: Request, res: Response) => {
+// export const getApartaments = async (req: Request, res: Response) => {
 
-  console.log("📥 GET /apartments/");
+//   console.log("📥 GET /apartments/");
 
-  try {
-    const data = await fetchApartments();   
+//   try {
+//     const data = await fetchApartments();   
 
-    if (!data || data.length === 0) {
-      return res.status(404).json({
-        message: "No apartments found"
-      });
-    }
+//     if (!data || data.length === 0) {
+//       return res.status(404).json({
+//         message: "No apartments found"
+//       });
+//     }
 
-    res.json(data);
+//     res.json(data);
 
-  } catch (error: any) {
+//   } catch (error: any) {
 
-    console.error("❌ GET APARTMENTS ERROR:", error.message);
-    return res.status(500).json({
-      message: "Internal server error",
-    });
-  }
-};
+//     console.error("❌ GET APARTMENTS ERROR:", error.message);
+//     return res.status(500).json({
+//       message: "Internal server error",
+//     });
+//   }
+// };
 
 export const getApartmentById = async (
   req: Request,
@@ -341,4 +343,34 @@ export const getImagesByApartment = async (req: Request, res: Response) => {
         console.error("❌ GET IMAGES BY APARTMENT ERROR:", error.message);
         return res.status(500).json({ message: "Internal serwer error" });
     }
+};
+
+export const getApartments = async (req: Request, res: Response) => {
+
+  try {
+
+    const page = Math.max(parseInt(req.query.page as string) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit as string) || 10, 100);
+
+    const result = await fetchAvailableApartments({
+      page,
+      limit,
+      from: req.query.from as string,
+      to: req.query.to as string,
+      city: req.query.city as string,
+      guests: req.query.guests
+        ? parseInt(req.query.guests as string)
+        : undefined
+    });
+
+    return res.json(result);
+
+  } catch (error: any) {
+
+    console.error("❌ GET APARTMENTS ERROR:", error.message);
+
+    return res.status(500).json({
+      error: "Internal server error"
+    });
+  }
 };

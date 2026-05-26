@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/authenticate';
 import { requireAdmin } from '../middleware/requireAdmin';
 import {
-    getApartaments,
+    getApartments,
     searchApartments,
     getApartmentById,
     getUnavailableDates,
@@ -15,7 +15,7 @@ import {
 
 const router = Router();
 
-router.get('/', getApartaments);
+router.get('/', getApartments);
 router.get('/search', searchApartments);
 router.get('/:id', getApartmentById);
 

@@ -144,3 +144,66 @@ export const fetchBookingsByApartmentId = async (
 
   return data;
 };
+
+export const fetchBookingsPaginated = async (params: {
+  page: number;
+  limit: number;
+  status?: string;
+  apartment_id?: string;
+  email?: string;
+  fromDate?: string;
+  toDate?: string;
+}) => {
+
+  const { page, limit, status, apartment_id, email, fromDate, toDate } = params;
+
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  let query = supabase
+    .from("bookings")
+    .select("*", { count: "exact" });
+
+  // 🔎 filters
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  if (apartment_id) {
+    query = query.eq("apartment_id", apartment_id);
+  }
+
+  if (email) {
+    query = query.ilike("email", `%${email}%`);
+  }
+
+  if (fromDate) {
+    query = query.gte("check_in", fromDate);
+  }
+
+  if (toDate) {
+    query = query.lte("check_out", toDate);
+  }
+
+  // 📄 pagination
+  query = query.range(from, to);
+
+  // 📊 sorting
+  query = query.order("created_at", { ascending: false });
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total: count || 0,
+      totalPages: Math.ceil((count || 0) / limit)
+    }
+  };
+};
