@@ -36,7 +36,7 @@ router.get(
 
 router.get(
     '/search',
-    validate(apartmentSearchSchema, 'query'),
+    //validate(apartmentSearchSchema, 'query'),
     searchApartments
 );
 
