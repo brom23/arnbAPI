@@ -12,17 +12,24 @@ export const fetchApartments = async () => {
     return data;
 };
 
-export const fetchApartmentById = async (apartmentId: string) => {
+export const fetchApartmentById = async (
+  apartmentId: string
+) => {
 
-    const { data, error } = await supabase
-        .from('apartments')
-        .select('*')
-        .eq('id', apartmentId)
-        .single();
+  const { data, error } = await supabase
+    .from("apartments")
+    .select(`
+      *,
+      apartment_images (*)
+    `)
+    .eq("id", apartmentId)
+    .maybeSingle();
 
-    if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
-    return data;
+  return data;
 };
 
 export const insertApartment = async (payload: any) => {
@@ -357,3 +364,15 @@ export const fetchApartmentsWithBookings = async () => {
 
   return data
 }
+
+//wszystkie apartamenty bez zdjec tylko okladka
+export const fetchAllApartments = async () => {
+
+  const { data, error } = await supabase
+    .from("apartments")
+    .select(`*`);
+
+  if (error) throw error;
+
+  return data;
+};

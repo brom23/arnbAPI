@@ -12,7 +12,8 @@ import {
   deleteApartmentById,
   fetchImagesByApartmentId,
   fetchAvailableApartments,
-  fetchApartmentsWithBookings
+  fetchApartmentsWithBookings,
+  fetchAllApartments
 } from "../services/apartmentService";
 
 import { AppError } from "../utils/AppError";
@@ -198,36 +199,12 @@ export const getImagesByApartment = asyncHandler(
 );
 
 export const getApartments = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (_req: Request, res: Response) => {
 
-    const parsed = apartmentSearchSchema.safeParse(req.query);
+    const apartments =
+      await fetchAllApartments();
 
-    if (!parsed.success) {
-      return res.status(400).json({
-        message: "Validation error",
-        errors: parsed.error.issues,
-      });
-    }
-
-    const {
-      page,
-      limit,
-      city,
-      from,
-      to,
-      guests
-    } = parsed.data;
-
-    const result = await fetchAvailableApartments({
-      page,
-      limit,
-      city,
-      from,
-      to,
-      guests
-    });
-
-    return res.json(result);
+    return res.json(apartments);
   }
 );
 
@@ -237,6 +214,9 @@ export const getAvailableApartments = async (
 ) => {
   try {
     const { from, to, guests } = req.body
+
+    console.log("📥 POST /apartments/available");
+    console.log("📥 BODY:", req.body);
 
     const apartments = await fetchApartmentsWithBookings()
 
