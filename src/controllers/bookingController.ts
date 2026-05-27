@@ -10,7 +10,8 @@ import {
   updateBookingStatus,
   deleteBooking,
   fetchBookingsByApartmentId,
-  fetchBookingsPaginated
+  fetchBookingsPaginated,
+  fetchBlockedBookings
 } from "../services/bookingService";
 
 import { getPagination } from "../utils/pagination";
@@ -249,5 +250,28 @@ export const getBookingsByApartmentId = asyncHandler(
     }
 
     return res.json(bookings);
+  }
+);
+
+export const getBlockedBookings = asyncHandler(
+  async (req: Request, res: Response) => {
+
+    const { apartmentId } = req.body;
+
+    if (!apartmentId) {
+      return res.status(400).json({
+        message: "apartmentId is required"
+      });
+    }
+
+    const data =
+      await fetchBlockedBookings(apartmentId);
+
+    const blocked = (data || []).map((b) => ({
+      from: b.check_in,
+      to: b.check_out
+    }));
+
+    return res.json({ blocked });
   }
 );

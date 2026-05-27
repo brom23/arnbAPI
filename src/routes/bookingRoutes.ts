@@ -9,15 +9,20 @@ import {
   getBookingsByApartmentId,
   updateBookingById,
   deleteBookingById,
-  updateBookingStatusById
+  updateBookingStatusById,
+  getBlockedBookings
 } from "../controllers/bookingController";
 
 const router = Router();
 
 //
-// PUBLIC / CREATE
+// PUBLIC 
 //
 router.post("/", createBooking);
+router.post(
+  "/blocked",
+  getBlockedBookings
+);
 
 //
 // ADMIN ROUTES

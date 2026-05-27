@@ -72,6 +72,10 @@ paths:
   /bookings/apartment/{id}:
     $ref: "./bookings.yaml#/paths/~1bookings~1apartment~1{id}"
 
+
+  /bookings/blocked:
+    $ref: "./bookings.yaml#/paths/~1bookings~1blocked"
+
   # 🖼️ IMAGES
   /apartment-images:
     $ref: "./apartment-images.yaml#/paths/~1apartment-images"

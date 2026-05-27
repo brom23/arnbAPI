@@ -207,3 +207,17 @@ export const fetchBookingsPaginated = async (params: {
     }
   };
 };
+
+export const fetchBlockedBookings = async (
+  apartmentId: string
+) => {
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("check_in, check_out")
+    .eq("apartment_id", apartmentId);
+
+  if (error) throw error;
+
+  return data;
+};

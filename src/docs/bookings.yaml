@@ -1,5 +1,51 @@
 paths:
 
+  /bookings/blocked:
+    post:
+      tags:
+        - bookings
+      summary: Get blocked dates for apartment
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - apartmentId
+              properties:
+                apartmentId:
+                  type: string
+                  format: uuid
+
+      responses:
+        200:
+          description: Blocked booking dates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  blocked:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        from:
+                          type: string
+                          format: date-time
+                        to:
+                          type: string
+                          format: date-time
+
+        400:
+          description: Validation error
+
+        500:
+          description: Internal server error
+
+
   /bookings:
     get:
       tags:
@@ -11,41 +57,49 @@ paths:
       parameters:
         - name: page
           in: query
+          required: false
           schema:
             type: integer
             example: 1
 
         - name: limit
           in: query
+          required: false
           schema:
             type: integer
             example: 10
 
         - name: status
           in: query
+          required: false
           schema:
             type: string
             example: confirmed
 
         - name: apartment_id
           in: query
+          required: false
           schema:
             type: string
             format: uuid
 
         - name: email
           in: query
+          required: false
           schema:
             type: string
+            format: email
 
         - name: fromDate
           in: query
+          required: false
           schema:
             type: string
             format: date
 
         - name: toDate
           in: query
+          required: false
           schema:
             type: string
             format: date
@@ -73,6 +127,13 @@ paths:
                         type: integer
                       totalPages:
                         type: integer
+
+        401:
+          description: Unauthorized
+
+        500:
+          description: Internal server error
+
 
   /bookings/{id}:
     get:
@@ -105,6 +166,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/BookingNotFound"
 
+        401:
+          description: Unauthorized
+
+        403:
+          description: Forbidden
+
+
     patch:
       tags:
         - bookings
@@ -135,6 +203,29 @@ paths:
               schema:
                 $ref: "#/components/schemas/Booking"
 
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+
+        401:
+          description: Unauthorized
+
+        403:
+          description: Forbidden
+
+        404:
+          description: Booking not found
+
+        409:
+          description: Apartment is not available for selected dates
+
+        500:
+          description: Internal server error
+
+
     delete:
       tags:
         - bookings
@@ -152,7 +243,28 @@ paths:
 
       responses:
         200:
-          description: Booking deleted
+          description: Booking deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Booking deleted successfully
+
+        401:
+          description: Unauthorized
+
+        403:
+          description: Forbidden
+
+        404:
+          description: Booking not found
+
+        500:
+          description: Internal server error
+
 
   /bookings/{id}/status:
     patch:
@@ -186,6 +298,26 @@ paths:
       responses:
         200:
           description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+        400:
+          description: Validation error
+
+        401:
+          description: Unauthorized
+
+        403:
+          description: Forbidden
+
+        404:
+          description: Booking not found
+
+        500:
+          description: Internal server error
+
 
   /bookings/apartment/{id}:
     get:
@@ -212,6 +344,16 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Booking"
+
+        404:
+          description: No bookings found
+
+        401:
+          description: Unauthorized
+
+        403:
+          description: Forbidden
+
 
 components:
 
@@ -250,6 +392,7 @@ components:
           type: string
           format: date-time
 
+
     CreateBooking:
       type: object
       required:
@@ -279,6 +422,7 @@ components:
           type: string
           format: email
 
+
     UpdateBooking:
       type: object
       properties:
@@ -304,9 +448,30 @@ components:
         status:
           type: string
 
+
     BookingNotFound:
       type: object
       properties:
         message:
           type: string
           example: Booking not found
+
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Validation error
+        errors:
+          type: array
+          items:
+            type: object
+
+
+    InternalServerError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Internal server error
