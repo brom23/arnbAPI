@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import { getDatesBetween } from "../utils/dates";
-import { apartmentSchema } from "../validators/apartmentValidator";
+import { apartmentSchema, apartmentSearchSchema } from "../validators/apartmentValidator";
 
 import {
   fetchApartmentById,
@@ -199,25 +199,31 @@ export const getImagesByApartment = asyncHandler(
 export const getApartments = asyncHandler(
   async (req: Request, res: Response) => {
 
-    const page = Math.max(
-      parseInt(req.query.page as string) || 1,
-      1
-    );
+    const parsed = apartmentSearchSchema.safeParse(req.query);
 
-    const limit = Math.min(
-      parseInt(req.query.limit as string) || 10,
-      100
-    );
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: "Validation error",
+        errors: parsed.error.issues,
+      });
+    }
+
+    const {
+      page,
+      limit,
+      city,
+      from,
+      to,
+      guests
+    } = parsed.data;
 
     const result = await fetchAvailableApartments({
       page,
       limit,
-      from: req.query.from as string,
-      to: req.query.to as string,
-      city: req.query.city as string,
-      guests: req.query.guests
-        ? parseInt(req.query.guests as string)
-        : undefined
+      city,
+      from,
+      to,
+      guests
     });
 
     return res.json(result);

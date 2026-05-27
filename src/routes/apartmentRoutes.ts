@@ -30,7 +30,7 @@ const router = Router();
 //
 router.get(
     '/',
-    validate(apartmentSearchSchema, 'query'),
+    //validate(apartmentSearchSchema, 'query'),
     getApartments
 );
 

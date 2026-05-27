@@ -174,22 +174,20 @@ export const apartmentSearchSchema = z.object({
     .positive("guests must be greater than 0")
     .optional(),
 
-  page: z
+    page: z
     .coerce
     .number()
     .int()
     .positive()
-    .optional()
     .default(1),
 
-  limit: z
+    limit: z
     .coerce
     .number()
     .int()
     .positive()
     .max(100)
-    .optional()
-    .default(10)
+    .default(10),
 })
 .refine(
   (data) => {
