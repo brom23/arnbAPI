@@ -8,6 +8,7 @@ import {
     searchApartments,
     getApartmentById,
     getUnavailableDates,
+    getAvailableApartments,
     createApartment,
     updateApartment,
     updateApartmentCover,
@@ -57,6 +58,11 @@ router.get(
     validate(apartmentParamsSchema, 'params'),
     getUnavailableDates
 );
+
+router.post(
+  '/available',
+  getAvailableApartments
+)
 
 //
 // ADMIN

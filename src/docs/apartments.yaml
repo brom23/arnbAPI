@@ -221,6 +221,61 @@ paths:
                 items:
                   $ref: "#/components/schemas/ApartmentImage"
 
+  /apartments/available:
+    post:
+      tags:
+        - apartments
+
+      summary: Get available apartments (no pagination)
+
+      description: |
+        Returns list of apartments available in given date range.
+        Applies Airbnb-style overlap detection and guest filtering.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - from
+                - to
+              properties:
+                from:
+                  type: string
+                  format: date
+                  example: 2026-06-01
+
+                to:
+                  type: string
+                  format: date
+                  example: 2026-06-07
+
+                guests:
+                  type: integer
+                  example: 2
+                  nullable: true
+
+        responses:
+          200:
+            description: List of available apartments
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Apartment"
+
+          400:
+            description: Validation error
+
+          500:
+            description: Internal server error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/InternalServerError"
     delete:
       tags:
         - apartment-images

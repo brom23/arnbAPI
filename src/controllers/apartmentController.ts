@@ -11,7 +11,8 @@ import {
   updateApartmentCoverByImage,
   deleteApartmentById,
   fetchImagesByApartmentId,
-  fetchAvailableApartments
+  fetchAvailableApartments,
+  fetchApartmentsWithBookings
 } from "../services/apartmentService";
 
 import { AppError } from "../utils/AppError";
@@ -229,3 +230,44 @@ export const getApartments = asyncHandler(
     return res.json(result);
   }
 );
+
+export const getAvailableApartments = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { from, to, guests } = req.body
+
+    const apartments = await fetchApartmentsWithBookings()
+
+    if (!apartments) {
+      return res.json([])
+    }
+
+    const available = apartments.filter((a: any) => {
+      // 1. guests filter
+      if (guests && a.guests < guests) return false
+
+      // 2. no bookings → available
+      if (!a.bookings?.length) return true
+
+      // 3. overlap check (AIRBNB RULE)
+      const isBlocked = a.bookings.some((b: any) => {
+        return (
+          new Date(from) < new Date(b.check_out) &&
+          new Date(to) > new Date(b.check_in)
+        )
+      })
+
+      return !isBlocked
+    })
+
+    return res.json(available)
+  } catch (error: any) {
+    console.error('❌ AVAILABILITY ERROR:', error.message)
+
+    return res.status(500).json({
+      message: 'Internal server error'
+    })
+  }
+}

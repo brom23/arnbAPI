@@ -38,6 +38,9 @@ paths:
   /apartments:
     $ref: "./apartments.yaml#/paths/~1apartments"
 
+  /apartments/available:
+    $ref: "./apartments.yaml#/paths/~1apartments~1available"
+
   /apartments/search:
     $ref: "./apartments.yaml#/paths/~1apartments~1search"
 

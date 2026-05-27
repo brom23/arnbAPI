@@ -336,3 +336,24 @@ export const fetchAvailableApartments = async (params: {
     }
   };
 };
+
+export const fetchApartmentsWithBookings = async () => {
+
+  const { data, error } = await supabase
+    .from('apartments')
+    .select(`
+      *,
+      apartment_images (*),
+      bookings (
+        check_in,
+        check_out
+      )
+    `)
+
+  if (error) {
+    console.error(error)
+    return []
+  }
+
+  return data
+}
