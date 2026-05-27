@@ -5,6 +5,8 @@ import { apartmentImageSchema } from "../validators/apartmentImageValidator";
 import {
   insertApartmentImage,
   fetchApartmentImages,
+  fetchApartmentImageById,
+  updateApartmentImageById,
   storeApartmentImage,
   deleteApartmentImage
 } from "../services/apartmentImageService";
@@ -20,7 +22,7 @@ export const createApartmentImage = asyncHandler(
     const result = apartmentImageSchema.safeParse(req.body);
 
     if (!result.success) {
-      throw result.error; // 🔥 KLUCZOWE
+      throw result.error;
     }
 
     const image = await insertApartmentImage(result.data);
@@ -65,6 +67,40 @@ export const uploadApartmentImage = asyncHandler(
     );
 
     return res.status(201).json(result);
+  }
+);
+
+export const updateApartmentImage = asyncHandler(
+  async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+
+    console.log(`📥 PATCH /apartment-images/${id}`);
+    console.log("BODY:", req.body);
+
+    //
+    // CHECK IMAGE EXISTS
+    //
+    const existingImage =
+      await fetchApartmentImageById(id as string);
+
+    if (!existingImage) {
+      throw new AppError(
+        "Image not found",
+        404
+      );
+    }
+
+    //
+    // UPDATE
+    //
+    const updatedImage =
+      await updateApartmentImageById(
+        id as string,
+        req.body
+      );
+
+    return res.status(200).json(updatedImage);
   }
 );
 

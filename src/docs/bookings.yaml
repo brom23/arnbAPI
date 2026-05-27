@@ -1,62 +1,51 @@
 paths:
 
-  paths:
-
   /bookings:
     get:
       tags:
         - bookings
-
       summary: Get bookings (paginated)
-
       security:
         - bearerAuth: []
 
       parameters:
         - name: page
           in: query
-          required: false
           schema:
             type: integer
             example: 1
 
         - name: limit
           in: query
-          required: false
           schema:
             type: integer
             example: 10
 
         - name: status
           in: query
-          required: false
           schema:
             type: string
             example: confirmed
 
         - name: apartment_id
           in: query
-          required: false
           schema:
             type: string
             format: uuid
 
         - name: email
           in: query
-          required: false
           schema:
             type: string
 
         - name: fromDate
           in: query
-          required: false
           schema:
             type: string
             format: date
 
         - name: toDate
           in: query
-          required: false
           schema:
             type: string
             format: date
@@ -73,7 +62,6 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Booking"
-
                   pagination:
                     type: object
                     properties:
@@ -86,71 +74,11 @@ paths:
                       totalPages:
                         type: integer
 
-        401:
-          description: Unauthorized
-
-        500:
-          description: Internal server error
-
-    post:
-      tags:
-        - bookings
-
-      summary: Create booking
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateBooking"
-
-      responses:
-        201:
-          description: Booking created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Booking"
-        400:
-          description: Validation error or apartment unavailable
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/ValidationError"
-                  - type: object
-                    properties:
-                      message:
-                        type: string
-                        example: Apartment is not available for selected dates
-
-        409:
-          description: Apartment is not available for selected dates
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Apartment is not available for selected dates
-
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
-
   /bookings/{id}:
     get:
       tags:
         - bookings
-
       summary: Get booking by ID
-      description: Admin only (requires Bearer token)
-
       security:
         - bearerAuth: []
 
@@ -170,20 +98,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/Booking"
 
-        401:
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UnauthorizedError"
-
-        403:
-          description: Forbidden (admin only)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ForbiddenError"
-
         404:
           description: Booking not found
           content:
@@ -191,19 +105,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/BookingNotFound"
 
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
     patch:
       tags:
         - bookings
-
       summary: Update booking
-      description: Admin only (requires JWT + role check in backend)
-
       security:
         - bearerAuth: []
 
@@ -211,7 +116,6 @@ paths:
         - name: id
           in: path
           required: true
-          description: Booking ID
           schema:
             type: string
             format: uuid
@@ -225,41 +129,16 @@ paths:
 
       responses:
         200:
-          description: Booking updated successfully
+          description: Booking updated
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Booking"
 
-        400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden (admin only)
-
-        404:
-          description: Booking not found
-
-        409:
-          description: Apartment is not available for selected dates
-
-        500:
-          description: Internal server error
-
     delete:
       tags:
         - bookings
-
       summary: Delete booking
-      description: Admin only (requires JWT + role check in backend)
-
       security:
         - bearerAuth: []
 
@@ -267,47 +146,19 @@ paths:
         - name: id
           in: path
           required: true
-          description: Booking ID
           schema:
             type: string
             format: uuid
 
       responses:
         200:
-          description: Booking deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Booking deleted successfully
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden (admin only)
-
-        404:
-          description: Booking not found
-
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
+          description: Booking deleted
 
   /bookings/{id}/status:
     patch:
       tags:
         - bookings
-
       summary: Update booking status
-      description: Admin only (requires JWT + role check in backend)
-
       security:
         - bearerAuth: []
 
@@ -315,7 +166,6 @@ paths:
         - name: id
           in: path
           required: true
-          description: Booking ID
           schema:
             type: string
             format: uuid
@@ -331,52 +181,17 @@ paths:
               properties:
                 status:
                   type: string
-                  example: confirmed
-                  enum:
-                    - pending
-                    - confirmed
-                    - cancelled
-                    - completed
+                  enum: [pending, confirmed, cancelled, completed]
 
       responses:
         200:
-          description: Booking status updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Booking"
-
-        400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden (admin only)
-
-        404:
-          description: Booking not found
-
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
+          description: Status updated
 
   /bookings/apartment/{id}:
     get:
       tags:
         - bookings
-
       summary: Get bookings by apartment ID
-      description: Returns all bookings for a specific apartment (admin only)
-
       security:
         - bearerAuth: []
 
@@ -384,14 +199,13 @@ paths:
         - name: id
           in: path
           required: true
-          description: Apartment ID
           schema:
             type: string
             format: uuid
 
       responses:
         200:
-          description: List of bookings for apartment
+          description: Bookings list
           content:
             application/json:
               schema:
@@ -399,43 +213,12 @@ paths:
                 items:
                   $ref: "#/components/schemas/Booking"
 
-        404:
-          description: No bookings found for this apartment
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: No bookings found for this apartment
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden (admin only)
-
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
-
 components:
-
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
 
   schemas:
 
     Booking:
       type: object
-
       properties:
         id:
           type: string
@@ -448,48 +231,27 @@ components:
         check_in:
           type: string
           format: date
-          example: 2026-05-20
 
         check_out:
           type: string
           format: date
-          example: 2026-05-21
 
         guests:
           type: integer
-          example: 2
-
-        total_price:
-          type: number
-          nullable: true
-          example: 420
 
         email:
           type: string
           format: email
-          example: test@example.com
 
         status:
           type: string
-          example: pending
 
         created_at:
           type: string
           format: date-time
 
-        hold_expires_at:
-          type: string
-          format: date-time
-          nullable: true
-
-        price_total:
-          type: number
-          nullable: true
-          example: 420
-
     CreateBooking:
       type: object
-
       required:
         - apartment_id
         - check_in
@@ -513,72 +275,12 @@ components:
         guests:
           type: integer
 
-        total_price:
-          type: number
-          nullable: true
-
         email:
           type: string
           format: email
 
-    BookingNotFound:
-      type: object
-
-      properties:
-        message:
-          type: string
-          example: Booking not found
-
-    ValidationError:
-      type: object
-
-      properties:
-        message:
-          type: string
-          example: Validation error
-
-        errors:
-          type: array
-
-          items:
-            type: object
-
-            properties:
-              field:
-                type: string
-                example: apartment_id
-
-              message:
-                type: string
-                example: Invalid UUID
-
-    UnauthorizedError:
-      type: object
-
-      properties:
-        message:
-          type: string
-          example: Unauthorized
-
-    ForbiddenError:
-      type: object
-
-      properties:
-        message:
-          type: string
-          example: Forbidden
-
-    InternalServerError:
-      type: object
-
-      properties:
-        error:
-          type: string
-          example: Internal server error
-    
     UpdateBooking:
       type: object
-
       properties:
         apartment_id:
           type: string
@@ -595,25 +297,16 @@ components:
         guests:
           type: integer
 
-        total_price:
-          type: number
-
-        first_name:
-          type: string
-
-        last_name:
-          type: string
-
         email:
           type: string
           format: email
 
-        phone:
-          type: string
-
-        notes:
-          type: string
-
         status:
           type: string
-          example: confirmed
+
+    BookingNotFound:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Booking not found

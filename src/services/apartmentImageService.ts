@@ -34,6 +34,29 @@ export const fetchApartmentImages = async () => {
     return data;
 };
 
+export const fetchApartmentImageById = async (
+  id: string
+) => {
+
+  const { data, error } = await supabase
+    .from("apartment_images")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+
+    console.error(
+      "❌ FETCH APARTMENT IMAGE BY ID ERROR:",
+      error.message
+    );
+
+    return null;
+  }
+
+  return data;
+};
+
 export const storeApartmentImage = async (
   file: Express.Multer.File,
   apartmentId: string
@@ -93,6 +116,26 @@ export const storeApartmentImage = async (
   return data;
 };
 
+export const updateApartmentImageById = async (
+  id: string,
+  data: any
+) => {
+
+  const { data: updatedImage, error } =
+    await supabase
+      .from("apartment_images")
+      .update(data)
+      .eq("id", id)
+      .select()
+      .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return updatedImage;
+};
+
 export const deleteApartmentImage = async (
   id: string
 ) => {
@@ -126,3 +169,4 @@ export const deleteApartmentImage = async (
 
   return true;
 };
+

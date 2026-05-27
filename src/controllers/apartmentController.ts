@@ -110,7 +110,7 @@ export const createApartment = asyncHandler(
     const result = apartmentSchema.safeParse(req.body);
 
     if (!result.success) {
-      throw new AppError("Validation error", 400);
+      throw result.error;
     }
 
     const apartment = await insertApartment(result.data);
@@ -129,7 +129,7 @@ export const updateApartment = asyncHandler(
     const result = apartmentSchema.partial().safeParse(req.body);
 
     if (!result.success) {
-      throw new AppError("Validation error", 400);
+      throw result.error;
     }
 
     const updated = await updateApartmentById(

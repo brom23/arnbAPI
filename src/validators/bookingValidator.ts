@@ -1,18 +1,52 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-export const bookingSchema = z.object({
-    apartment_id: z.string().uuid(),
-    check_in: z.string(),   // ISO date
-    check_out: z.string(),  // ISO date
+/**
+ * 🔹 BASE SCHEMA (bez refine)
+ * używany jako źródło prawdy
+ */
+export const bookingBaseSchema = z.object({
+  apartment_id: z.string().uuid(),
+  check_in: z.string().date(),
+  check_out: z.string().date(),
+  guests: z.number().int().positive(),
+  email: z.string().email(),
+  total_price: z.number().nonnegative().optional()
+});
 
-    guests: z.number().int().positive(),
+/**
+ * 🔹 CREATE BOOKING (z walidacją dat)
+ */
+export const bookingSchema = bookingBaseSchema.refine(
+  (data) => new Date(data.check_out) > new Date(data.check_in),
+  {
+    message: "check_out must be after check_in",
+    path: ["check_out"]
+  }
+);
 
-    email: z.string().email(), // 🔥 REQUIRED
+/**
+ * 🔹 UPDATE BOOKING (bez refine → safe .partial())
+ */
+export const updateBookingSchema = bookingBaseSchema.partial();
 
-    total_price: z.number().positive().optional(),
+/**
+ * 🔹 STATUS SCHEMA (do PATCH /status)
+ */
+export const bookingStatusSchema = z.object({
+  status: z.enum(["pending", "confirmed", "cancelled", "completed"])
+});
 
-    status: z.string().optional(),
-    hold_expires_at: z.string().optional()
-    //@TODO
-    // Dopisac name, surname, phone_number, address, city, country, zip_code. 
+/**
+ * 🔹 QUERY SCHEMA (pagination + filters)
+ */
+export const bookingQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+
+  status: z.string().optional(),
+  apartment_id: z.string().uuid().optional(),
+  email: z.string().email().optional(),
+
+  fromDate: z.string().date().optional(),
+  toDate: z.string().date().optional()
 });

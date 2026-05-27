@@ -11,6 +11,15 @@ export const errorHandler = (
 
   console.error("❌ ERROR:", err);
 
+  if (err?.type === "entity.parse.failed") {
+    return res.status(400).json({
+      message: "Invalid JSON format",
+      example: {
+        field: "value"
+      }
+    });
+  }
+
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       message: err.message

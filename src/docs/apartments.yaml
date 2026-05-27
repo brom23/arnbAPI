@@ -4,9 +4,7 @@ paths:
     get:
       tags:
         - apartments
-
       summary: Get apartments (paginated)
-
       description: |
         Returns paginated apartments list.
 
@@ -14,11 +12,10 @@ paths:
         - pagination
         - city filtering
         - guests filtering
-        - availability filtering by date range
+        - availability filtering (from/to)
 
         Example:
         /apartments?from=2026-06-01&to=2026-06-07
-
       parameters:
         - name: page
           in: query
@@ -51,29 +48,24 @@ paths:
         - name: from
           in: query
           required: false
-          description: Check-in date used for apartment availability filtering
           schema:
             type: string
             format: date
-            example: 2026-06-01
 
         - name: to
           in: query
           required: false
-          description: Check-out date used for apartment availability filtering
           schema:
             type: string
             format: date
-            example: 2026-06-07
 
-    responses:
+      responses:
         200:
-          description: Paginated apartments list
+          description: Paginated apartments
           content:
             application/json:
               schema:
                 type: object
-
                 properties:
                   data:
                     type: array
@@ -85,19 +77,12 @@ paths:
                     properties:
                       page:
                         type: integer
-                        example: 1
-
                       limit:
                         type: integer
-                        example: 10
-
                       total:
                         type: integer
-                        example: 42
-
                       totalPages:
                         type: integer
-                        example: 5
 
         500:
           description: Internal server error
@@ -110,18 +95,14 @@ paths:
       tags:
         - apartments
       summary: Create apartment
-      description: Admin only (requires JWT + role check in backend)
-
       security:
         - bearerAuth: []
-
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateApartment"
-
       responses:
         201:
           description: Apartment created
@@ -129,26 +110,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Apartment"
-
         400:
           description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-
         401:
-          description: Unauthorized (no token)
-
+          description: Unauthorized
         403:
-          description: Forbidden (admin only)
-
+          description: Forbidden
         500:
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
 
   /apartments/search:
     get:
@@ -158,30 +127,22 @@ paths:
       parameters:
         - name: city
           in: query
-          required: false
           schema:
             type: string
-
         - name: from
           in: query
-          required: false
           schema:
             type: string
             format: date
-
         - name: to
           in: query
-          required: false
           schema:
             type: string
             format: date
-
         - name: guests
           in: query
-          required: false
           schema:
             type: integer
-
       responses:
         200:
           description: Filtered apartments
@@ -192,26 +153,11 @@ paths:
                 items:
                   $ref: "#/components/schemas/Apartment"
 
-        400:
-          description: Invalid search parameters
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SearchError"
-
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
-
   /apartments/{id}:
     get:
       tags:
         - apartments
       summary: Get apartment by ID
-
       parameters:
         - name: id
           in: path
@@ -219,172 +165,55 @@ paths:
           schema:
             type: string
             format: uuid
-
       responses:
         200:
-          description: Apartment details
+          description: Apartment
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Apartment"
-
-        404:
-          description: Apartment not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApartmentNotFound"
-
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
 
     patch:
       tags:
         - apartments
       summary: Update apartment
-      description: Admin only (requires JWT + role check in backend)
-
       security:
         - bearerAuth: []
-
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateApartment"
-
       responses:
         200:
-          description: Apartment updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Apartment"
+          description: Updated apartment
 
-        400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden (admin only)
-
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
-                
   /apartments/{id}/cover:
     patch:
       tags:
         - apartments
-
-      summary: Update apartment cover image
-      description: Admin only (requires JWT + role check in backend)
-
+      summary: Update cover image
       security:
         - bearerAuth: []
-
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Apartment ID
-          schema:
-            type: string
-            format: uuid
-
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-
               required:
                 - imageId
-
               properties:
                 imageId:
                   type: string
                   format: uuid
-                  example: 7b9c2d1e-4f2c-4d7b-9f1a-2c6b8e9d1234
-
       responses:
         200:
-          description: Apartment cover updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Apartment"
+          description: Cover updated
 
-        400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden (admin only)
-
-        404:
-          description: Apartment not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApartmentNotFound"
-
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
-        
   /apartments/{id}/images:
     get:
       tags:
         - apartments
-
-      summary: Get images for apartment
-      description: Returns all images assigned to a specific apartment
-
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Apartment ID
-          schema:
-            type: string
-            format: uuid
-
+      summary: Get apartment images
       responses:
         200:
-          description: List of apartment images
+          description: List of images
           content:
             application/json:
               schema:
@@ -392,115 +221,91 @@ paths:
                 items:
                   $ref: "#/components/schemas/ApartmentImage"
 
-        404:
-          description: No images found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: No images found
-
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
-
     delete:
       tags:
-        - apartments
-      summary: Delete apartment
-      description: Admin only (requires JWT + role check in backend)
-
+        - apartment-images
+      summary: Delete all apartment images
       security:
         - bearerAuth: []
-
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Apartment ID
-          schema:
-            type: string
-            format: uuid
-
       responses:
         200:
-          description: Apartment deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Apartment deleted successfully
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden (admin only)
-
-        404:
-          description: Apartment not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApartmentNotFound"
-
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
+          description: Images deleted
 
   /apartments/{id}/bookings/unavailable-dates:
     get:
       tags:
         - apartments
-      summary: Get unavailable booking dates
-
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-
+      summary: Get unavailable dates
       responses:
         200:
-          description: Unavailable dates
+          description: Dates
+
+  /apartment-images:
+    get:
+      tags:
+        - apartment-images
+      summary: Get all images
+      responses:
+        200:
+          description: List of images
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  apartmentId:
-                    type: string
-                    format: uuid
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApartmentImage"
 
-                  unavailableDates:
-                    type: array
-                    items:
-                      type: string
-                      format: date
+    post:
+      tags:
+        - apartment-images
+      summary: Create image record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateApartmentImage"
+      responses:
+        201:
+          description: Created
 
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
+  /apartment-images/upload:
+    post:
+      tags:
+        - apartment-images
+      summary: Upload image
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - apartmentId
+                - image
+              properties:
+                apartmentId:
+                  type: string
+                  format: uuid
+                image:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: Uploaded
+
+  /apartment-images/{id}:
+    delete:
+      tags:
+        - apartment-images
+      summary: Delete image
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Deleted
 
 components:
-
   schemas:
 
     Apartment:
@@ -509,191 +314,36 @@ components:
         id:
           type: string
           format: uuid
-
         title:
           type: string
-          example: Loft Premium
-
-        slug:
-          type: string
-          nullable: true
-
         description:
           type: string
-          example: Luxury apartment in city center
-
         price_per_night:
           type: number
-          example: 420
-
         guests:
           type: integer
-          example: 2
-
         city:
           type: string
-          example: Kraków
-
-        image:
-          type: string
-          format: uri
-
-        created_at:
-          type: string
-          format: date-time
-
-        base_price:
-          type: number
-          example: 100
-
-        max_rooms:
-          type: integer
-          example: 1
-
-        cancellation_type:
-          type: string
-          example: flexible
-
-        apartment_number:
-          type: string
-          example: "1"
-
-        floor:
-          type: string
-          example: parter
-
-        staircase:
-          type: string
-          example: "1"
-
-        has_balcony:
-          type: boolean
-          example: false
-
-        amenities:
-          type: string
-          example: aneks kuchenny, mikrofalówka, tv
-
-        beds:
-          type: integer
-          example: 2
-
-        min_guests:
-          type: integer
-          example: 1
 
     CreateApartment:
       type: object
-
       required:
         - title
         - description
         - price_per_night
         - guests
         - city
-
       properties:
         title:
           type: string
-
         description:
           type: string
-
         price_per_night:
           type: number
-
         guests:
           type: integer
-
         city:
           type: string
-
-        image:
-          type: string
-          format: uri
-
-        base_price:
-          type: number
-
-        max_rooms:
-          type: integer
-
-        cancellation_type:
-          type: string
-
-        apartment_number:
-          type: string
-
-        floor:
-          type: string
-
-        staircase:
-          type: string
-
-        has_balcony:
-          type: boolean
-
-        amenities:
-          type: string
-
-        beds:
-          type: integer
-
-        min_guests:
-          type: integer
-
-    UpdateApartment:
-      type: object
-
-      properties:
-        title:
-          type: string
-
-        description:
-          type: string
-
-        price_per_night:
-          type: number
-
-        guests:
-          type: integer
-
-        city:
-          type: string
-
-        image:
-          type: string
-          format: uri
-
-        base_price:
-          type: number
-
-        max_rooms:
-          type: integer
-
-        cancellation_type:
-          type: string
-
-        apartment_number:
-          type: string
-
-        floor:
-          type: string
-
-        staircase:
-          type: string
-
-        has_balcony:
-          type: boolean
-
-        amenities:
-          type: string
-
-        beds:
-          type: integer
-
-        min_guests:
-          type: integer
 
     ApartmentImage:
       type: object
@@ -701,49 +351,32 @@ components:
         id:
           type: string
           format: uuid
-
         apartment_id:
           type: string
           format: uuid
-
-        url:
+        image_url:
           type: string
           format: uri
-
         created_at:
           type: string
           format: date-time
+        position:
+          type: integer
+        is_cover:
+          type: boolean
 
-    ApartmentNotFound:
+    CreateApartmentImage:
       type: object
+      required:
+        - apartment_id
+        - image_url
       properties:
-        message:
+        apartment_id:
           type: string
-          example: Apartment not found
-
-    NotFoundResponse:
-      type: object
-      properties:
-        message:
+          format: uuid
+        image_url:
           type: string
-          example: No apartments found
-
-    SearchError:
-      type: object
-      properties:
-        message:
-          type: string
-          example: At least one search parameter is required
-
-    ValidationError:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Validation error
-
-        errors:
-          type: object
+          format: uri
 
     InternalServerError:
       type: object

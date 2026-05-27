@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/authenticate';
 import { requireAdmin } from '../middleware/requireAdmin';
+import { validate } from '../middleware/validate';
+
 import {
     getApartments,
     searchApartments,
@@ -13,22 +15,84 @@ import {
     getImagesByApartment 
 } from '../controllers/apartmentController';
 
+import {
+    apartmentParamsSchema,
+    createApartmentSchema,
+    updateApartmentSchema,
+    apartmentSearchSchema,
+    updateApartmentCoverSchema
+} from '../validators/apartmentValidator';
+
 const router = Router();
 
-router.get('/', getApartments);
-router.get('/search', searchApartments);
-router.get('/:id', getApartmentById);
+//
+// PUBLIC
+//
+router.get(
+    '/',
+    validate(apartmentSearchSchema, 'query'),
+    getApartments
+);
 
+router.get(
+    '/search',
+    validate(apartmentSearchSchema, 'query'),
+    searchApartments
+);
 
-router.get('/:id/images', getImagesByApartment);
-// służy do pobierania zarezerwowanych dat dla danego apartamentu, zeby frontend mogl je zablokowac w kalendarzu
-router.get('/:id/bookings/unavailable-dates',  getUnavailableDates);
+router.get(
+    '/:id',
+    validate(apartmentParamsSchema, 'params'),
+    getApartmentById
+);
 
-router.post('/', authenticate, requireAdmin, createApartment);
+router.get(
+    '/:id/images',
+    validate(apartmentParamsSchema, 'params'),
+    getImagesByApartment
+);
 
-router.patch('/:id', authenticate, requireAdmin, updateApartment);
-router.patch('/:id/cover', authenticate, requireAdmin, updateApartmentCover);
+router.get(
+    '/:id/bookings/unavailable-dates',
+    validate(apartmentParamsSchema, 'params'),
+    getUnavailableDates
+);
 
-router.delete('/:id', authenticate, requireAdmin, deleteApartment);
+//
+// ADMIN
+//
+router.post(
+    '/',
+    authenticate,
+    requireAdmin,
+    validate(createApartmentSchema, 'body'),
+    createApartment
+);
+
+router.patch(
+    '/:id',
+    authenticate,
+    requireAdmin,
+    validate(apartmentParamsSchema, 'params'),
+    validate(updateApartmentSchema, 'body'),
+    updateApartment
+);
+
+router.patch(
+    '/:id/cover',
+    authenticate,
+    requireAdmin,
+    validate(apartmentParamsSchema, 'params'),
+    validate(updateApartmentCoverSchema, 'body'),
+    updateApartmentCover
+);
+
+router.delete(
+    '/:id',
+    authenticate,
+    requireAdmin,
+    validate(apartmentParamsSchema, 'params'),
+    deleteApartment
+);
 
 export default router;
