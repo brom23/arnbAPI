@@ -74,6 +74,13 @@ export const searchApartments = asyncHandler(
       );
     }
 
+    if (from === to) {
+      throw new AppError(
+        "Minimum stay is 1 night",
+        400
+      )
+    }
+
     const apartments =
       await fetchAvailableApartments({
         from: from as string | undefined,
@@ -83,6 +90,11 @@ export const searchApartments = asyncHandler(
           ? Number(guests)
           : undefined
       });
+
+    //   console.log(
+    //   '📥 RESPONSE:',
+    //   JSON.stringify(apartments[0], null, 2)
+    // );
 
     return res.json(apartments);
   }

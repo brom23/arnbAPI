@@ -8,6 +8,7 @@ import apartmentRoutes from "./routes/apartmentRoutes";
 import bookingRoutes from "./routes/bookingRoutes";
 import apartmentImageRoutes from "./routes/apartmentImageRoutes";
 import authRoutes from "./routes/authRoutes";
+import corsMiddleware from "./cors";
 
 const app = express();
 
@@ -22,6 +23,11 @@ app.use((req, res, next) => {
   res.setHeader("Expires", "0");
   next();
 });
+
+//
+// CORS
+// Allow all origins for development
+app.use(corsMiddleware);
 
 //
 // SWAGGER
@@ -57,7 +63,7 @@ type RegisteredRoute = {
   router: Router;
 };
 
-export const registeredRoutes = [
+export const registeredRoutes: RegisteredRoute[]= [
     {
         path: '/api/v1/auth',
         router: authRoutes
@@ -81,6 +87,7 @@ export const registeredRoutes = [
 // REGISTER ROUTES
 //
 registeredRoutes.forEach((route) => {
+  console.log("👉 REGISTER RAW PATH:", JSON.stringify(route.path));
   app.use(route.path, route.router);
 });
 
@@ -93,5 +100,6 @@ app.get("/", (_, res) => {
     message: "API is running",
   });
 });
+
 
 export default app;
