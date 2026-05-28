@@ -39,36 +39,52 @@ export const getApartmentById = asyncHandler(
 export const searchApartments = asyncHandler(
   async (req: Request, res: Response) => {
 
-    const { city, from, to, guests } = req.query;
+    const {
+      from,
+      to,
+      guests,
+      city
+    } = req.query;
 
     console.log(
-      `📥 GET /apartments/search?city=${city},from=${from},to=${to},guests=${guests}`
+      `📥 GET /apartments/search?from=${from}&to=${to}&guests=${guests}&city=${city}`
     );
 
-    if (!city && !from && !to && !guests) {
+    // musi być przynajmniej 1 parametr
+    if (
+      !from &&
+      !to &&
+      !guests &&
+      !city
+    ) {
       throw new AppError(
         "At least one search parameter is required",
         400
       );
     }
 
-    if ((from && !to) || (!from && to)) {
+    // from + to muszą być razem
+    if (
+      (from && !to) ||
+      (!from && to)
+    ) {
       throw new AppError(
         "Both 'from' and 'to' must be provided together",
         400
       );
     }
 
-    const data = await fetchAvailableApartments({
-      page: 1,
-      limit: 1000,
-      from: from as string,
-      to: to as string,
-      city: city as string,
-      guests: guests ? Number(guests) : undefined
-    });
+    const apartments =
+      await fetchAvailableApartments({
+        from: from as string | undefined,
+        to: to as string | undefined,
+        city: city as string | undefined,
+        guests: guests
+          ? Number(guests)
+          : undefined
+      });
 
-    return res.json(data);
+    return res.json(apartments);
   }
 );
 
@@ -199,10 +215,11 @@ export const getImagesByApartment = asyncHandler(
 );
 
 export const getApartments = asyncHandler(
-  async (_req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
 
-    const apartments =
-      await fetchAllApartments();
+    console.log("📥 GET /apartments");
+
+    const apartments = await fetchAllApartments();
 
     return res.json(apartments);
   }

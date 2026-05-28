@@ -272,19 +272,37 @@ export const fetchApartmentsPaginated = async (params: {
 };
 
 export const fetchAvailableApartments = async (params: {
-  page: number;
-  limit: number;
   from?: string;
   to?: string;
   city?: string;
   guests?: number;
 }) => {
 
-  const { page, limit, from, to, city, guests } = params;
+  const {
+    from,
+    to,
+    city,
+    guests
+  } = params;
 
-  const offset = (page - 1) * limit;
-
+  //
   // 1. znajdź konflikty bookingów
+  //
+  // AIRBNB RULE:
+  // checkout tego samego dnia = OK
+  // nowy checkin tego samego dnia = OK
+  //
+  // kolizja istnieje tylko gdy:
+  //
+  // existing.check_in < new.check_out
+  // AND
+  // existing.check_out > new.check_in
+  //
+  // czyli używamy:
+  // lt(check_in, to)
+  // gt(check_out, from)
+  //
+
   let bookedApartmentIds: string[] = [];
 
   if (from && to) {
@@ -300,23 +318,46 @@ export const fetchAvailableApartments = async (params: {
     }
 
     bookedApartmentIds =
-      conflicts?.map(b => b.apartment_id) || [];
+      conflicts
+        ?.map((b) => b.apartment_id)
+        .filter(Boolean) || [];
   }
 
+  //
   // 2. apartments query
+  //
   let query = supabase
     .from("apartments")
-    .select("*", { count: "exact" });
+    .select(`
+      *,
+      apartment_images (*)
+    `);
 
+  //
+  // city filter
+  //
   if (city) {
-    query = query.ilike("city", `%${city}%`);
+    query = query.ilike(
+      "city",
+      `%${city}%`
+    );
   }
 
+  //
+  // guests filter
+  //
   if (guests) {
-    query = query.gte("guests", guests);
+    query = query.gte(
+      "guests",
+      guests
+    );
   }
 
+  //
+  // exclude booked apartments
+  //
   if (bookedApartmentIds.length > 0) {
+
     query = query.not(
       "id",
       "in",
@@ -324,24 +365,21 @@ export const fetchAvailableApartments = async (params: {
     );
   }
 
-  query = query.range(offset, offset + limit - 1);
-  query = query.order("created_at", { ascending: false });
+  //
+  // newest first
+  //
+  query = query.order(
+    "created_at",
+    { ascending: false }
+  );
 
-  const { data, error, count } = await query;
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return {
-    data,
-    pagination: {
-      page,
-      limit,
-      total: count || 0,
-      totalPages: Math.ceil((count || 0) / limit)
-    }
-  };
+  return data || [];
 };
 
 export const fetchApartmentsWithBookings = async () => {
@@ -367,12 +405,13 @@ export const fetchApartmentsWithBookings = async () => {
 
 //wszystkie apartamenty bez zdjec tylko okladka
 export const fetchAllApartments = async () => {
-
   const { data, error } = await supabase
     .from("apartments")
-    .select(`*`);
+    .select("*");
 
-  if (error) throw error;
+  if (error) {
+    throw new Error(`Failed to fetch apartments: ${error.message}`);
+  }
 
-  return data;
+  return data ?? [];
 };
