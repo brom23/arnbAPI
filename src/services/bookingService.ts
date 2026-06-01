@@ -1,15 +1,45 @@
 import { supabase } from '../lib/supabase';
 
-export const fetchBookings = async () => {
+export const fetchBookings = async (params: {
+  status?: string;
+  apartment_id?: string;
+  email?: string;
+  fromDate?: string;
+  toDate?: string;
+}) => {
+  const { status, apartment_id, email, fromDate, toDate } = params;
 
-    const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .order('created_at', { ascending: false });
+  let query = supabase.from("bookings").select("*");
 
-    if (error) throw error;
+  if (status) {
+    query = query.eq("status", status);
+  }
 
-    return data;
+  if (apartment_id) {
+    query = query.eq("apartment_id", apartment_id);
+  }
+
+  if (email) {
+    query = query.ilike("email", `%${email}%`);
+  }
+
+  if (fromDate) {
+    query = query.gte("check_in", fromDate);
+  }
+
+  if (toDate) {
+    query = query.lte("check_out", toDate);
+  }
+
+  query = query.order("created_at", { ascending: false });
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
 };
 
 export const fetchBookingById= async (id: string) => {
@@ -145,68 +175,68 @@ export const fetchBookingsByApartmentId = async (
   return data;
 };
 
-export const fetchBookingsPaginated = async (params: {
-  page: number;
-  limit: number;
-  status?: string;
-  apartment_id?: string;
-  email?: string;
-  fromDate?: string;
-  toDate?: string;
-}) => {
+// export const fetchBookingsPaginated = async (params: {
+//   page: number;
+//   limit: number;
+//   status?: string;
+//   apartment_id?: string;
+//   email?: string;
+//   fromDate?: string;
+//   toDate?: string;
+// }) => {
 
-  const { page, limit, status, apartment_id, email, fromDate, toDate } = params;
+//   const { page, limit, status, apartment_id, email, fromDate, toDate } = params;
 
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
+//   const from = (page - 1) * limit;
+//   const to = from + limit - 1;
 
-  let query = supabase
-    .from("bookings")
-    .select("*", { count: "exact" });
+//   let query = supabase
+//     .from("bookings")
+//     .select("*", { count: "exact" });
 
-  // 🔎 filters
-  if (status) {
-    query = query.eq("status", status);
-  }
+//   // 🔎 filters
+//   if (status) {
+//     query = query.eq("status", status);
+//   }
 
-  if (apartment_id) {
-    query = query.eq("apartment_id", apartment_id);
-  }
+//   if (apartment_id) {
+//     query = query.eq("apartment_id", apartment_id);
+//   }
 
-  if (email) {
-    query = query.ilike("email", `%${email}%`);
-  }
+//   if (email) {
+//     query = query.ilike("email", `%${email}%`);
+//   }
 
-  if (fromDate) {
-    query = query.gte("check_in", fromDate);
-  }
+//   if (fromDate) {
+//     query = query.gte("check_in", fromDate);
+//   }
 
-  if (toDate) {
-    query = query.lte("check_out", toDate);
-  }
+//   if (toDate) {
+//     query = query.lte("check_out", toDate);
+//   }
 
-  // 📄 pagination
-  query = query.range(from, to);
+//   // 📄 pagination
+//   query = query.range(from, to);
 
-  // 📊 sorting
-  query = query.order("created_at", { ascending: false });
+//   // 📊 sorting
+//   query = query.order("created_at", { ascending: false });
 
-  const { data, error, count } = await query;
+//   const { data, error, count } = await query;
 
-  if (error) {
-    throw new Error(error.message);
-  }
+//   if (error) {
+//     throw new Error(error.message);
+//   }
 
-  return {
-    data,
-    pagination: {
-      page,
-      limit,
-      total: count || 0,
-      totalPages: Math.ceil((count || 0) / limit)
-    }
-  };
-};
+//   return {
+//     data,
+//     pagination: {
+//       page,
+//       limit,
+//       total: count || 0,
+//       totalPages: Math.ceil((count || 0) / limit)
+//     }
+//   };
+// };
 
 export const fetchBlockedBookings = async (
   apartmentId: string

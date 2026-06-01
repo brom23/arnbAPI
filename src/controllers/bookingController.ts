@@ -10,8 +10,9 @@ import {
   updateBookingStatus,
   deleteBooking,
   fetchBookingsByApartmentId,
-  fetchBookingsPaginated,
-  fetchBlockedBookings
+  //fetchBookingsPaginated,
+  fetchBlockedBookings,
+  fetchBookings
 } from "../services/bookingService";
 
 import { getPagination } from "../utils/pagination";
@@ -19,16 +20,36 @@ import { getPagination } from "../utils/pagination";
 import { AppError } from "../utils/AppError";
 import { asyncHandler } from "../utils/asyncHandler";
 
+// export const getBookings = asyncHandler(
+//   async (req: Request, res: Response) => {
+
+//     console.log("📥 GET /bookings", req.query);
+
+//     const { page, limit } = getPagination(req.query);
+
+//     const result = await fetchBookingsPaginated({
+//       page,
+//       limit,
+//       status: req.query.status as string,
+//       apartment_id: req.query.apartment_id as string,
+//       email: req.query.email as string,
+//       fromDate: req.query.fromDate as string,
+//       toDate: req.query.toDate as string
+//     });
+
+//     return res.json(result);
+//   }
+// );
+
 export const getBookings = asyncHandler(
   async (req: Request, res: Response) => {
 
-    console.log("📥 GET /bookings", req.query);
+    console.log(
+    "📥 GET /bookings QUERY:",
+    Object.fromEntries(Object.entries(req.query))
+  );
 
-    const { page, limit } = getPagination(req.query);
-
-    const result = await fetchBookingsPaginated({
-      page,
-      limit,
+    const result = await fetchBookings({
       status: req.query.status as string,
       apartment_id: req.query.apartment_id as string,
       email: req.query.email as string,

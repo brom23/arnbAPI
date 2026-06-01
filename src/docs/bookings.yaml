@@ -52,20 +52,9 @@ paths:
         Returns all bookings.
         All query params are optional — if none provided, returns all bookings.
 
-      parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            example: 1
+        NOTE: page and limit are currently ignored (no pagination in backend).
 
-        - name: limit
-          in: query
-          required: false
-          schema:
-            type: integer
-            example: 10
+      parameters:
 
         - name: status
           in: query
@@ -104,18 +93,38 @@ paths:
 
       responses:
         200:
-          description: Admin bookings response
+          description: List of bookings
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AdminBookingResponse"
+                type: array
+
+              example:
+                - id: "6a49b903-d55c-4ea2-9077-785a56662c3e"
+                  apartment_id: "194d18a1-2109-4fa2-9c37-939d85ea8b1e"
+                  check_in: "2026-05-29"
+                  check_out: "2026-05-30"
+                  guests: 2
+                  email: "adam.nowak@email.com"
+                  status: "pending"
+                  created_at: "2026-05-28T13:07:15.736489"
+                  hold_expires_at: null
+                  total_price: 100
+                  price_total: 100
+                  first_name: "Adam"
+                  last_name: "Nowak"
+                  phone: "555555555"
+                  city: "Warszawa"
+                  zip: "23-344"
+                  street: "Królewska 2"
+                  country: "Polska"
+                  notes: "Please be clean"
 
         401:
           description: Unauthorized
 
         500:
           description: Internal server error
-
 
   /bookings/{id}:
     get:
