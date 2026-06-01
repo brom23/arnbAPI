@@ -277,55 +277,40 @@ export const fetchAvailableApartments = async (params: {
   city?: string;
   guests?: number;
 }) => {
+  const { from, to, city, guests } = params;
 
-  const {
-    from,
-    to,
-    city,
-    guests
-  } = params;
+  if (!from || !to) return [];
 
-  //
+  const start = new Date(from);
+  const end = new Date(to);
+
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  // ❌ blokujemy 0 lub ujemne noce
+  const nights =
+    (end.getTime() - start.getTime()) /
+    (1000 * 60 * 60 * 24);
+
+  if (nights < 1) return [];
+
+  // ----------------------------
   // 1. znajdź konflikty bookingów
-  //
-  // AIRBNB RULE:
-  // checkout tego samego dnia = OK
-  // nowy checkin tego samego dnia = OK
-  //
-  // kolizja istnieje tylko gdy:
-  //
-  // existing.check_in < new.check_out
-  // AND
-  // existing.check_out > new.check_in
-  //
-  // czyli używamy:
-  // lt(check_in, to)
-  // gt(check_out, from)
-  //
+  // ----------------------------
+  const { data: conflicts, error } = await supabase
+    .from("bookings")
+    .select("apartment_id")
+    .lt("check_in", to)
+    .gt("check_out", from);
 
-  let bookedApartmentIds: string[] = [];
+  if (error) throw new Error(error.message);
 
-  if (from && to) {
+  const bookedApartmentIds =
+    [...new Set(conflicts?.map(b => b.apartment_id).filter(Boolean))];
 
-    const { data: conflicts, error } = await supabase
-      .from("bookings")
-      .select("apartment_id")
-      .lt("check_in", to)
-      .gt("check_out", from);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    bookedApartmentIds =
-      conflicts
-        ?.map((b) => b.apartment_id)
-        .filter(Boolean) || [];
-  }
-
-  //
+  // ----------------------------
   // 2. apartments query
-  //
+  // ----------------------------
   let query = supabase
     .from("apartments")
     .select(`
@@ -333,31 +318,15 @@ export const fetchAvailableApartments = async (params: {
       apartment_images (*)
     `);
 
-  //
-  // city filter
-  //
   if (city) {
-    query = query.ilike(
-      "city",
-      `%${city}%`
-    );
+    query = query.ilike("city", `%${city}%`);
   }
 
-  //
-  // guests filter
-  //
   if (guests) {
-    query = query.gte(
-      "guests",
-      guests
-    );
+    query = query.gte("guests", guests);
   }
 
-  //
-  // exclude booked apartments
-  //
   if (bookedApartmentIds.length > 0) {
-
     query = query.not(
       "id",
       "in",
@@ -365,19 +334,11 @@ export const fetchAvailableApartments = async (params: {
     );
   }
 
-  //
-  // newest first
-  //
-  query = query.order(
-    "created_at",
-    { ascending: false }
-  );
+  query = query.order("created_at", { ascending: false });
 
-  const { data, error } = await query;
+  const { data, error: qErr } = await query;
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  if (qErr) throw new Error(qErr.message);
 
   return data || [];
 };
