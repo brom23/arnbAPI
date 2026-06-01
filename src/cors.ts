@@ -3,7 +3,8 @@ import cors, { CorsOptions } from "cors";
 const allowedOrigins = [
   "http://localhost:3030",
   "http://localhost:3000",
-  "https://arnb-backend.onrender.com"
+  "https://arnb-backend.onrender.com",
+  "https://swtest.pl"
  // "https://twoja-domena.pl",
 ];
 
