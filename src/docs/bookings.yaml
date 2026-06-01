@@ -39,20 +39,18 @@ paths:
                           type: string
                           format: date-time
 
-        400:
-          description: Validation error
-
-        500:
-          description: Internal server error
-
 
   /bookings:
     get:
       tags:
         - bookings
-      summary: Get bookings (paginated)
+      summary: Get all bookings (ADMIN ONLY)
       security:
         - bearerAuth: []
+
+      description: |
+        Returns all bookings.
+        All query params are optional — if none provided, returns all bookings.
 
       parameters:
         - name: page
@@ -74,7 +72,7 @@ paths:
           required: false
           schema:
             type: string
-            example: confirmed
+            example: pending
 
         - name: apartment_id
           in: query
@@ -106,27 +104,11 @@ paths:
 
       responses:
         200:
-          description: Paginated bookings list
+          description: Admin bookings response
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Booking"
-                  pagination:
-                    type: object
-                    properties:
-                      page:
-                        type: integer
-                      limit:
-                        type: integer
-                      total:
-                        type: integer
-                      totalPages:
-                        type: integer
+                $ref: "#/components/schemas/AdminBookingResponse"
 
         401:
           description: Unauthorized
@@ -142,7 +124,6 @@ paths:
       summary: Get booking by ID
       security:
         - bearerAuth: []
-
       parameters:
         - name: id
           in: path
@@ -150,7 +131,6 @@ paths:
           schema:
             type: string
             format: uuid
-
       responses:
         200:
           description: Booking details
@@ -161,16 +141,6 @@ paths:
 
         404:
           description: Booking not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BookingNotFound"
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden
 
 
     patch:
@@ -179,51 +149,19 @@ paths:
       summary: Update booking
       security:
         - bearerAuth: []
-
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: string
-            format: uuid
-
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/UpdateBooking"
-
       responses:
         200:
-          description: Booking updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Booking"
-
-        400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden
-
-        404:
-          description: Booking not found
-
-        409:
-          description: Apartment is not available for selected dates
-
-        500:
-          description: Internal server error
+          description: Updated booking
 
 
     delete:
@@ -232,38 +170,13 @@ paths:
       summary: Delete booking
       security:
         - bearerAuth: []
-
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: string
-            format: uuid
-
       responses:
         200:
-          description: Booking deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Booking deleted successfully
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden
-
-        404:
-          description: Booking not found
-
-        500:
-          description: Internal server error
+          description: Deleted booking
 
 
   /bookings/{id}/status:
@@ -273,15 +186,10 @@ paths:
       summary: Update booking status
       security:
         - bearerAuth: []
-
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: string
-            format: uuid
-
       requestBody:
         required: true
         content:
@@ -298,25 +206,6 @@ paths:
       responses:
         200:
           description: Status updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Booking"
-
-        400:
-          description: Validation error
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden
-
-        404:
-          description: Booking not found
-
-        500:
-          description: Internal server error
 
 
   /bookings/apartment/{id}:
@@ -326,15 +215,10 @@ paths:
       summary: Get bookings by apartment ID
       security:
         - bearerAuth: []
-
       parameters:
         - name: id
           in: path
           required: true
-          schema:
-            type: string
-            format: uuid
-
       responses:
         200:
           description: Bookings list
@@ -344,15 +228,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Booking"
-
-        404:
-          description: No bookings found
-
-        401:
-          description: Unauthorized
-
-        403:
-          description: Forbidden
 
 
 components:
@@ -365,62 +240,75 @@ components:
         id:
           type: string
           format: uuid
-
         apartment_id:
           type: string
           format: uuid
-
         check_in:
           type: string
           format: date
-
         check_out:
           type: string
           format: date
-
         guests:
           type: integer
-
         email:
           type: string
           format: email
-
         status:
           type: string
+
+        total_price:
+          type: number
+        price_total:
+          type: number
+
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone:
+          type: string
+
+        city:
+          type: string
+        zip:
+          type: string
+        street:
+          type: string
+        country:
+          type: string
+        notes:
+          type: string
+
+        hold_expires_at:
+          type: string
+          nullable: true
+          format: date-time
 
         created_at:
           type: string
           format: date-time
 
 
-    CreateBooking:
+    AdminBookingResponse:
       type: object
-      required:
-        - apartment_id
-        - check_in
-        - check_out
-        - guests
-        - email
-
       properties:
-        apartment_id:
-          type: string
-          format: uuid
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Booking"
 
-        check_in:
-          type: string
-          format: date
-
-        check_out:
-          type: string
-          format: date
-
-        guests:
-          type: integer
-
-        email:
-          type: string
-          format: email
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
 
 
     UpdateBooking:
@@ -429,22 +317,17 @@ components:
         apartment_id:
           type: string
           format: uuid
-
         check_in:
           type: string
           format: date
-
         check_out:
           type: string
           format: date
-
         guests:
           type: integer
-
         email:
           type: string
           format: email
-
         status:
           type: string
 
@@ -454,24 +337,3 @@ components:
       properties:
         message:
           type: string
-          example: Booking not found
-
-
-    ValidationError:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Validation error
-        errors:
-          type: array
-          items:
-            type: object
-
-
-    InternalServerError:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Internal server error
