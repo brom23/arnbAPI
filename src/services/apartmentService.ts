@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { AppError } from '../utils/AppError';
 import { removeFileFromStorage } from '../utils/storage';
 
 export const fetchApartments = async () => {
@@ -376,3 +377,61 @@ export const fetchAllApartments = async () => {
 
   return data ?? [];
 };
+
+export type ApartmentPriceMap = Record<string, number>;
+
+export async function fetchApartmentPricingById(
+  apartmentId: string,
+  from?: string,
+  to?: string
+): Promise<{ prices: ApartmentPriceMap }> {
+  const apartment = await fetchApartmentById(apartmentId);
+  if (!apartment) throw new AppError("Apartment not found", 404);
+
+  // Jeżeli nie ma podanych query parameters → zwróć wszystkie ceny lub base_price
+  if (!from && !to) {
+    const { data, error } = await supabase
+      .from("apartment_pricing")
+      .select("date, price")
+      .eq("apartment_id", apartmentId)
+      .order("date", { ascending: true });
+
+    if (error) throw new Error(error.message);
+
+    const prices: ApartmentPriceMap = {};
+    if (data && data.length > 0) {
+      data.forEach((row) => {
+        const isoDate = new Date(row.date).toISOString().split("T")[0];
+        prices[isoDate] = Number(row.price);
+      });
+    } else if (apartment.base_price) {
+      prices["base_price"] = apartment.base_price;
+    }
+
+    return { prices };
+  }
+
+  // Jeżeli podano from/to → pobierz tylko w tym zakresie
+  let query = supabase
+    .from("apartment_pricing")
+    .select("date, price")
+    .eq("apartment_id", apartmentId)
+    .order("date", { ascending: true });
+
+  if (from) query = query.gte("date", from);
+  if (to) query = query.lte("date", to);
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+
+  const prices: ApartmentPriceMap = {};
+  if (data && data.length > 0) {
+    data.forEach((row) => {
+      const isoDate = new Date(row.date).toISOString().split("T")[0];
+      prices[isoDate] = Number(row.price);
+    });
+  }
+
+  // Jeśli brak danych w zakresie → można zwrócić pusty obiekt
+  return { prices };
+}

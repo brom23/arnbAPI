@@ -198,7 +198,73 @@ paths:
       responses:
         200:
           description: OK
-
+          
+  /apartments/{id}/pricing:
+    get:
+      tags:
+        - apartments
+      summary: Get pricing for a specific apartment
+      description: >
+        Retrieves the pricing for an apartment by its ID. 
+        If no query parameters are provided, returns all available pricing entries.
+        Optionally, you can provide `from` and `to` query parameters to filter by date range.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the apartment
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Start date to filter prices (inclusive)
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: End date to filter prices (inclusive)
+      responses:
+        200:
+          description: Pricing for the apartment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  prices:
+                    type: object
+                    additionalProperties:
+                      type: number
+                    example:
+                      "2026-05-28": 101
+                      "2026-05-29": 101
+                      "2026-05-30": 101
+                      "2026-05-31": 101
+        400:
+          description: Bad request (e.g., missing apartment ID)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+        404:
+          description: Apartment not found or no pricing available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApartmentNotFound"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
 
   /apartments/{id}/bookings/unavailable-dates:
     get:

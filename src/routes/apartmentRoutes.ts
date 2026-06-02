@@ -13,7 +13,8 @@ import {
     updateApartment,
     updateApartmentCover,
     deleteApartment,
-    getImagesByApartment 
+    getImagesByApartment, 
+    getApartmentPricing
 } from '../controllers/apartmentController';
 
 import {
@@ -52,6 +53,8 @@ router.get(
     validate(apartmentParamsSchema, 'params'),
     getImagesByApartment
 );
+
+router.get('/:id/pricing', getApartmentPricing);
 
 router.get(
     '/:id/bookings/unavailable-dates',

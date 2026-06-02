@@ -13,7 +13,8 @@ import {
   fetchImagesByApartmentId,
   fetchAvailableApartments,
   fetchApartmentsWithBookings,
-  fetchAllApartments
+  fetchAllApartments,
+  fetchApartmentPricingById
 } from "../services/apartmentService";
 
 import { AppError } from "../utils/AppError";
@@ -280,3 +281,25 @@ export const getAvailableApartments = async (
     })
   }
 }
+
+// GET /apartments/:id/pricing?from=YYYY-MM-DD&to=YYYY-MM-DD
+export const getApartmentPricing = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { from, to } = req.query;
+
+    if (!id) throw new AppError("Apartment ID is required", 400);
+
+    const { prices } = await fetchApartmentPricingById(
+      id as string,
+      from as string | undefined,
+      to as string | undefined
+    );
+
+    if (!prices || Object.keys(prices).length === 0) {
+      throw new AppError("No pricing found for this apartment", 404);
+    }
+
+    return res.json({ prices });
+  }
+);
