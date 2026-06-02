@@ -198,16 +198,19 @@ paths:
       responses:
         200:
           description: OK
-          
+
   /apartments/{id}/pricing:
     get:
       tags:
         - apartments
-      summary: Get pricing for a specific apartment
-      description: >
-        Retrieves the pricing for an apartment by its ID. 
-        If no query parameters are provided, returns all available pricing entries.
-        Optionally, you can provide `from` and `to` query parameters to filter by date range.
+      summary: Get apartment pricing by date range
+      description: |
+        Returns pricing calendar for an apartment.
+
+        - If no query params are provided → returns full pricing map
+        - If `from` and `to` are provided → returns filtered date range
+        - Both `from` and `to` must be provided together
+
       parameters:
         - name: id
           in: path
@@ -215,24 +218,28 @@ paths:
           schema:
             type: string
             format: uuid
-          description: The ID of the apartment
+
         - name: from
           in: query
           required: false
           schema:
             type: string
-            format: date
-          description: Start date to filter prices (inclusive)
+            pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            example: "2026-06-25"
+          description: Start date (YYYY-MM-DD)
+
         - name: to
           in: query
           required: false
           schema:
             type: string
-            format: date
-          description: End date to filter prices (inclusive)
+            pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            example: "2026-06-30"
+          description: End date (YYYY-MM-DD)
+
       responses:
         200:
-          description: Pricing for the apartment
+          description: Pricing map
           content:
             application/json:
               schema:
@@ -246,25 +253,45 @@ paths:
                       "2026-05-28": 101
                       "2026-05-29": 101
                       "2026-05-30": 101
-                      "2026-05-31": 101
+
         400:
-          description: Bad request (e.g., missing apartment ID)
+          description: Invalid query parameters
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/InternalServerError"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    examples:
+                      missingFrom:
+                        value: "Query parameter 'from' is missing. Both 'from' and 'to' must be provided together."
+                      missingTo:
+                        value: "Query parameter 'to' is missing. Both 'from' and 'to' must be provided together."
+                      invalidFormat:
+                        value: "Invalid date format. Use YYYY-MM-DD"
+
         404:
-          description: Apartment not found or no pricing available
+          description: No pricing found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApartmentNotFound"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No pricing found for this apartment"
+
         500:
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/InternalServerError"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error"
 
   /apartments/{id}/bookings/unavailable-dates:
     get:
