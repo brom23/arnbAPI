@@ -141,7 +141,7 @@ export const createApartment = asyncHandler(
     const result = apartmentSchema.safeParse(req.body);
 
     if (!result.success) {
-      throw result.error;
+      throw new AppError("Validation error", 400, result.error);
     }
 
     const apartment = await insertApartment(result.data);
@@ -285,77 +285,18 @@ export const getAvailableApartments = async (
 // GET /apartments/:id/pricing?from=YYYY-MM-DD&to=YYYY-MM-DD
 export const getApartmentPricing = asyncHandler(
   async (req: Request, res: Response) => {
-  try {
+
     const { id } = req.params;
     const { from, to } = req.query;
 
-    console.log(`📥 GET /apartments/${id}/pricing`, req.query);
+    console.log(`📥 GET /apartments/${id}/pricing`);
 
-    // 1. brak query → zwracamy wszystkie ceny
-    if (!from && !to) {
-      const pricing = await fetchApartmentPricingById(id as string);
-      if (!pricing || !pricing.prices || Object.keys(pricing.prices).length === 0) {
-        return res.status(404).json({
-          message: "No pricing found for this apartment",
-        });
-      }
-      return res.json({ prices: pricing });
-    }
-
-    // 2. tylko jeden parametr → informacyjny błąd
-    if (!from) {
-      return res.status(400).json({
-        message: "Query parameter 'from' is missing. Both 'from' and 'to' must be provided together.",
-      });
-    }
-
-    if (!to) {
-      return res.status(400).json({
-        message: "Query parameter 'to' is missing. Both 'from' and 'to' must be provided together.",
-      });
-    }
-
-    // 3. walidacja formatu YYYY-MM-DD
-    const isValidDate = (d: string) =>
-      /^\d{4}-\d{2}-\d{2}$/.test(d);
-
-    if (!isValidDate(from as string) || !isValidDate(to as string)) {
-      throw new AppError("Invalid date format. Use YYYY-MM-DD", 400);
-    }
-
-    // 4. logika biznesowa: from < to i różne
-    if (from === to) {
-      throw new AppError("'from' and 'to' cannot be the same", 400);
-    }
-    if (new Date(from as string) > new Date(to as string)) {
-      throw new AppError("'from' must be earlier than 'to'", 400);
-    }
-
-    // 5. pobranie danych z service
     const pricing = await fetchApartmentPricingById(
-      id as string,
-      from as string,
-      to as string
+      id as string ,
+      from as string | undefined,
+      to as string | undefined
     );
 
-    if (!pricing || !pricing.prices || Object.keys(pricing.prices).length === 0) {
-      return res.status(404).json({
-        message: "No pricing found for this apartment in the given date range",
-      });
-    }
-
-    return res.json({ prices: pricing });
-  } catch (err: any) {
-    console.error("❌ PRICING ERROR:", err.message);
-
-    if (err instanceof AppError) {
-      return res.status(err.statusCode).json({
-        message: err.message,
-      });
-    }
-
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+    return res.json(pricing);
   }
-});
+);

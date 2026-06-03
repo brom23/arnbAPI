@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { ApartmentPriceMap, ApartmentPricingResponse } from '../types/apartmentPricingResponse';
 import { AppError } from '../utils/AppError';
 import { removeFileFromStorage } from '../utils/storage';
 
@@ -378,60 +379,58 @@ export const fetchAllApartments = async () => {
   return data ?? [];
 };
 
-export type ApartmentPriceMap = Record<string, number>;
 
 export async function fetchApartmentPricingById(
   apartmentId: string,
   from?: string,
   to?: string
-): Promise<{ prices: ApartmentPriceMap }> {
+): Promise<ApartmentPricingResponse> {
+
   const apartment = await fetchApartmentById(apartmentId);
-  if (!apartment) throw new AppError("Apartment not found", 404);
 
-  // Jeżeli nie ma podanych query parameters → zwróć wszystkie ceny lub base_price
-  if (!from && !to) {
-    const { data, error } = await supabase
-      .from("apartment_pricing")
-      .select("date, price")
-      .eq("apartment_id", apartmentId)
-      .order("date", { ascending: true });
-
-    if (error) throw new Error(error.message);
-
-    const prices: ApartmentPriceMap = {};
-    if (data && data.length > 0) {
-      data.forEach((row) => {
-        const isoDate = new Date(row.date).toISOString().split("T")[0];
-        prices[isoDate] = Number(row.price);
-      });
-    } else if (apartment.base_price) {
-      prices["base_price"] = apartment.base_price;
-    }
-
-    return { prices };
+  if (!apartment) {
+    throw new AppError("Apartment not found", 404);
   }
 
-  // Jeżeli podano from/to → pobierz tylko w tym zakresie
   let query = supabase
     .from("apartment_pricing")
     .select("date, price")
     .eq("apartment_id", apartmentId)
     .order("date", { ascending: true });
 
-  if (from) query = query.gte("date", from);
-  if (to) query = query.lte("date", to);
-
-  const { data, error } = await query;
-  if (error) throw new Error(error.message);
-
-  const prices: ApartmentPriceMap = {};
-  if (data && data.length > 0) {
-    data.forEach((row) => {
-      const isoDate = new Date(row.date).toISOString().split("T")[0];
-      prices[isoDate] = Number(row.price);
-    });
+  // 🔥 VALIDACJA RANGE
+  if (from && !to) {
+    throw new AppError("Query parameter 'to' is required when 'from' is provided", 400);
   }
 
-  // Jeśli brak danych w zakresie → można zwrócić pusty obiekt
+  if (to && !from) {
+    throw new AppError("Query parameter 'from' is required when 'to' is provided", 400);
+  }
+
+  if (from && to) {
+    if (from > to) {
+      throw new AppError("'from' cannot be greater than 'to'", 400);
+    }
+
+    query = query.gte("date", from).lte("date", to);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new AppError(error.message, 500);
+  }
+
+  if (!data || data.length === 0) {
+    throw new AppError("No pricing found for this apartment", 404);
+  }
+
+  // 🔥 MAP → OBJECT
+  const prices: ApartmentPriceMap = {};
+
+  data.forEach((row) => {
+    prices[row.date] = Number(row.price);
+  });
+
   return { prices };
 }

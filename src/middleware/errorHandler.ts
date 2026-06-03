@@ -22,22 +22,29 @@ export const errorHandler = (
 
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
-      message: err.message
+      message: err.message,
+      errors: err.details instanceof ZodError
+        ? err.details.issues.map(i => ({
+            field: i.path.join("."),
+            message: i.message
+          }))
+        : err.details
     });
   }
 
-  if (err instanceof ZodError) {
-    return res.status(400).json({
-      message: "Validation error",
-      errors: err.issues.map((issue) => ({
-        field: issue.path.join("."),
-        message: issue.message
-      }))
-    });
-  }
+  // if (err instanceof ZodError) {
+  //   return res.status(400).json({
+  //     message: "Validation error",
+  //     errors: err.issues.map((issue) => ({
+  //       field: issue.path.join("."),
+  //       message: issue.message
+  //     }))
+  //   });
+  // }
 
   // fallback
   return res.status(500).json({
     message: "Internal server error"
   });
 };
+
