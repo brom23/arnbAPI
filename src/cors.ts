@@ -13,7 +13,10 @@ const corsOptions: CorsOptions = {
     // allow Postman / mobile apps / server-to-server
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    if (
+      origin.startsWith("http://localhost:") ||
+      origin.startsWith("http://10.") ||
+      allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
