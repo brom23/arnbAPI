@@ -9,8 +9,11 @@ import bookingRoutes from "./routes/bookingRoutes";
 import apartmentImageRoutes from "./routes/apartmentImageRoutes";
 import authRoutes from "./routes/authRoutes";
 import corsMiddleware from "./cors";
+import cookieParser from "cookie-parser";
 
 const app = express();
+
+app.use(cookieParser());
 
 //
 // MIDDLEWARES
