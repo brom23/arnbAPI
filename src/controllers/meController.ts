@@ -19,8 +19,6 @@ export const meController = asyncHandler(
       throw new AppError("Unauthorized", 401);
     }
 
-    // OPTIONAL: role z DB (jeśli masz profiles)
-    // const profile = await getProfile(data.user.id)
 
     return res.json({
       user: {

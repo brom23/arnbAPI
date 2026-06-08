@@ -5,6 +5,7 @@ import { meController } from "../controllers/meController";
 //import { adminLoginSchema } from "../validators/authValidator";
 //import { validate } from "../middleware/validate";
 import { logoutController } from "../controllers/logoutController";
+import { refreshController } from "../controllers/refreshController";
 
 const router = Router();
 
@@ -20,6 +21,11 @@ router.post(
 router.get(
   "/me",
   meController
+);
+
+router.post(
+  "/refresh",
+  refreshController
 );
 
 router.post(
