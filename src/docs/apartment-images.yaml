@@ -41,11 +41,10 @@ paths:
       tags:
         - apartment-images
 
-      summary: Create apartment image
-      description: Admin only (requires JWT + role check in backend)
+      summary: Create apartment image (metadata only)
+      description: Admin only
 
-      security:
-        - bearerAuth: []
+      cookieAuth: []
 
       requestBody:
         required: true
@@ -93,11 +92,10 @@ paths:
       tags:
         - apartment-images
 
-      summary: Upload apartment image
-      description: Upload image using multipart/form-data (Multer). Admin only.
+      summary: Upload image file (multipart)
+      description: Admin only - uploads file and returns URL
 
-      security:
-        - bearerAuth: []
+      cookieAuth: []
 
       requestBody:
         required: true
@@ -162,10 +160,8 @@ paths:
         - apartment-images
 
       summary: Update apartment image
-      description: Admin only (requires JWT + role check in backend)
 
-      security:
-        - bearerAuth: []
+      cookieAuth: []
 
       parameters:
 
@@ -232,8 +228,7 @@ paths:
       summary: Delete image by id
       description: Deletes database record and physical file from Supabase Storage. Admin only.
 
-      security:
-        - bearerAuth: []
+      cookieAuth: []
 
       parameters:
 

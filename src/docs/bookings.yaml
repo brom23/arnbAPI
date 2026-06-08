@@ -39,14 +39,12 @@ paths:
                           type: string
                           format: date-time
 
-
   /bookings:
     get:
       tags:
         - bookings
       summary: Get all bookings (ADMIN ONLY)
-      security:
-        - bearerAuth: []
+      cookieAuth: []
 
       description: |
         Returns all bookings.
@@ -131,8 +129,7 @@ paths:
       tags:
         - bookings
       summary: Get booking by ID
-      security:
-        - bearerAuth: []
+      cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -151,13 +148,11 @@ paths:
         404:
           description: Booking not found
 
-
     patch:
       tags:
         - bookings
       summary: Update booking
-      security:
-        - bearerAuth: []
+      cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -172,13 +167,11 @@ paths:
         200:
           description: Updated booking
 
-
     delete:
       tags:
         - bookings
       summary: Delete booking
-      security:
-        - bearerAuth: []
+      cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -187,14 +180,12 @@ paths:
         200:
           description: Deleted booking
 
-
   /bookings/{id}/status:
     patch:
       tags:
         - bookings
       summary: Update booking status
-      security:
-        - bearerAuth: []
+      cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -216,14 +207,12 @@ paths:
         200:
           description: Status updated
 
-
   /bookings/apartment/{id}:
     get:
       tags:
         - bookings
       summary: Get bookings by apartment ID
-      security:
-        - bearerAuth: []
+      cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -237,7 +226,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Booking"
-
 
 components:
 
@@ -298,7 +286,6 @@ components:
           type: string
           format: date-time
 
-
     AdminBookingResponse:
       type: object
       properties:
@@ -319,7 +306,6 @@ components:
             totalPages:
               type: integer
 
-
     UpdateBooking:
       type: object
       properties:
@@ -339,7 +325,6 @@ components:
           format: email
         status:
           type: string
-
 
     BookingNotFound:
       type: object

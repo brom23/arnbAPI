@@ -46,8 +46,7 @@ paths:
       description: |
         Creates a new apartment.
         Validated with Zod schema (createApartmentSchema).
-      security:
-        - bearerAuth: []
+      cookieAuth: []
       requestBody:
         required: true
         content:
@@ -204,8 +203,7 @@ paths:
       tags:
         - apartments
       summary: Update apartment
-      security:
-        - bearerAuth: []
+      cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -227,8 +225,7 @@ paths:
       tags:
         - apartments
       summary: Delete apartment
-      security:
-        - bearerAuth: []
+      cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -246,8 +243,7 @@ paths:
       tags:
         - apartments
       summary: Update cover image
-      security:
-        - bearerAuth: []
+      cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -394,8 +390,7 @@ paths:
       tags:
         - apartment-images
       summary: Create image
-      security:
-        - bearerAuth: []
+      cookieAuth: []
       requestBody:
         required: true
         content:
@@ -405,51 +400,6 @@ paths:
       responses:
         201:
           description: Created
-
-
-  /apartment-images/upload:
-    post:
-      tags:
-        - apartment-images
-      summary: Upload image
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required:
-                - apartmentId
-                - image
-              properties:
-                apartmentId:
-                  type: string
-                  format: uuid
-                image:
-                  type: string
-                  format: binary
-      responses:
-        201:
-          description: Uploaded
-
-
-  /apartment-images/{id}:
-    delete:
-      tags:
-        - apartment-images
-      summary: Delete image
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-      responses:
-        200:
-          description: Deleted
-
 
 components:
 

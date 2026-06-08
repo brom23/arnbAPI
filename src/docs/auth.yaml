@@ -2,6 +2,7 @@ paths:
 
   /auth/admin/login:
     post:
+      cookieAuth: []
       tags:
         - auth
       summary: Admin login
@@ -51,6 +52,7 @@ paths:
 
   /auth/refresh:
     post:
+      cookieAuth: []
       tags:
         - auth
       summary: Refresh authentication session
@@ -91,6 +93,7 @@ paths:
 
   /auth/logout:
     post:
+      cookieAuth: []
       tags:
         - auth
       summary: Logout user
@@ -117,7 +120,7 @@ paths:
       summary: Get current authenticated user
       description: |
         Returns currently authenticated user based on access_token cookie.
-
+      cookieAuth: []
       responses:
         200:
           description: Authenticated user
@@ -132,7 +135,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-
 
 components:
 

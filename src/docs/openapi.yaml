@@ -20,13 +20,17 @@ tags:
 
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: |
+        Authentication via HttpOnly cookies:
+        - access_token (short-lived)
+        - refresh_token (long-lived, used for /auth/refresh)
 
 security:
-  - bearerAuth: []
+  - cookieAuth: []
 
 paths:
 
