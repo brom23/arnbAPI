@@ -23,8 +23,6 @@ import { asyncHandler } from "../utils/asyncHandler";
 // export const getBookings = asyncHandler(
 //   async (req: Request, res: Response) => {
 
-//     console.log("📥 GET /bookings", req.query);
-
 //     const { page, limit } = getPagination(req.query);
 
 //     const result = await fetchBookingsPaginated({
@@ -43,11 +41,6 @@ import { asyncHandler } from "../utils/asyncHandler";
 
 export const getBookings = asyncHandler(
   async (req: Request, res: Response) => {
-
-    console.log(
-    "📥 GET /bookings QUERY:",
-    Object.fromEntries(Object.entries(req.query))
-  );
 
     const result = await fetchBookings({
       status: req.query.status as string,
@@ -78,8 +71,6 @@ export const getBookingById = asyncHandler(
 
 export const createBooking = asyncHandler(
   async (req: Request, res: Response) => {
-
-    console.log("📥 POST /bookings BODY:", req.body);
 
     const result = bookingSchema.safeParse(req.body);
 
@@ -112,8 +103,6 @@ export const createBooking = asyncHandler(
 
     const booking = await insertBooking(result.data);
 
-    console.log("✅ BOOKING CREATED:", booking);
-
     return res.status(201).json(booking);
   }
 );
@@ -122,9 +111,6 @@ export const updateBookingById = asyncHandler(
   async (req: Request, res: Response) => {
 
     const { id } = req.params;
-
-    console.log(`📥 PATCH /bookings/${id}`);
-    console.log("BODY:", req.body);
 
     const result = bookingSchema.partial().safeParse(req.body);
 
@@ -197,8 +183,6 @@ export const deleteBookingById = asyncHandler(
 
     const { id } = req.params;
 
-    console.log(`📥 DELETE /bookings/${id}`);
-
     const booking = await fetchBookingById(id as string);
 
     if (!booking) {
@@ -218,9 +202,6 @@ export const updateBookingStatusById = asyncHandler(
 
     const { id } = req.params;
     const { status } = req.body;
-
-    console.log(`📥 PATCH /bookings/${id}/status`);
-    console.log("BODY:", req.body);
 
     const allowedStatuses = [
       "pending",
@@ -256,8 +237,6 @@ export const getBookingsByApartmentId = asyncHandler(
   async (req: Request, res: Response) => {
 
     const { id } = req.params;
-
-    console.log(`📥 GET /bookings/apartment/${id}`);
 
     const bookings = await fetchBookingsByApartmentId(
       id as string

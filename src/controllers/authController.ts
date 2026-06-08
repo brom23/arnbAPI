@@ -51,6 +51,7 @@ if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
 import { asyncHandler } from "../utils/asyncHandler";
 import { loginAdmin } from "../services/authService";
 import { AppError } from "../utils/AppError";
+import { log } from "../utils/logger";
 
 export const loginController = asyncHandler(
   async (req: Request, res: Response) => {
@@ -60,10 +61,19 @@ export const loginController = asyncHandler(
       throw new AppError("Email and password are required", 400);
     }
 
-    console.log("🔐 LOGIN ATTEMPT:", email);
+    log.info(`🔐 LOGIN ATTEMPT ${email}`);
 
     // logowanie przez backend do Supabase
     const session = await loginAdmin(email, password);
+
+    const payload = JSON.parse(
+      Buffer.from(
+        session.access_token.split(".")[1],
+        "base64"
+      ).toString()
+    );
+
+    const expiresAt = new Date(payload.exp * 1000).toISOString();
 
     if (!session?.access_token) {
       throw new AppError(
@@ -72,10 +82,7 @@ export const loginController = asyncHandler(
       );
     }
 
-    console.log("✅ LOGIN SUCCESS:", {
-      userId: session.user.id,
-      email: session.user.email
-    });
+    log.info(`✅ LOGIN SUCCESS ${session.user.id}`);
 
     // Używamy tokenów zwróconych przez Supabase
     const accessToken = session.access_token;
@@ -99,10 +106,13 @@ export const loginController = asyncHandler(
 
     // Zwracamy minimalne info o użytkowniku
     return res.status(200).json({
+      authenticated: true,
       user: {
         id: session.user.id,
-        email: session.user.email,
-        //role: session.user.role
+        email: session.user.email
+      },
+      session: {
+        expiresAt
       }
     });
   }

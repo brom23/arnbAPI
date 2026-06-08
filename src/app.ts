@@ -10,8 +10,12 @@ import apartmentImageRoutes from "./routes/apartmentImageRoutes";
 import authRoutes from "./routes/authRoutes";
 import corsMiddleware from "./cors";
 import cookieParser from "cookie-parser";
+import { requestLogger } from "./middleware/requestLogger";
+import { log } from "./utils/logger";
 
 const app = express();
+
+app.use(requestLogger);
 
 app.use(cookieParser());
 
@@ -90,7 +94,7 @@ export const registeredRoutes: RegisteredRoute[]= [
 // REGISTER ROUTES
 //
 registeredRoutes.forEach((route) => {
-  console.log("👉 REGISTER RAW PATH:", JSON.stringify(route.path));
+  log.info("👉 REGISTER RAW PATH:", JSON.stringify(route.path));
   app.use(route.path, route.router);
 });
 

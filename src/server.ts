@@ -1,6 +1,7 @@
 import os from "os";
 import app, { registeredRoutes } from "./app";
 import { errorHandler } from "./middleware/errorHandler";
+import { log } from "./utils/logger";
 
 const PORT = process.env.SERVER_PORT || 3030;
 
@@ -9,14 +10,14 @@ app.use(errorHandler);
 const server = app.listen(PORT, () => {
   const localIp = getLocalIp();
 
-  console.log("===========================================");
-  console.log("🚀 SERVER STARTED SUCCESSFULLY");
-  console.log("===========================================");
-  console.log(`🌍 LOCAL:   \thttp://localhost:${PORT}`);
-  console.log(`🌍 NETWORK: \thttp://${localIp}:${PORT}`);
-  console.log(`📚 SWAGGER: \thttp://${localIp}:${PORT}/api-docs`);
-  console.log(`⏱ TIME:    \t${new Date().toISOString()}`);
-  console.log("===========================================");
+  log.info("===========================================");
+  log.info("🚀 SERVER STARTED SUCCESSFULLY");
+  log.info("===========================================");
+  log.info(`🌍 LOCAL:   \thttp://localhost:${PORT}`);
+  log.info(`🌍 NETWORK: \thttp://${localIp}:${PORT}`);
+  log.info(`📚 SWAGGER: \thttp://${localIp}:${PORT}/api-docs`);
+  log.info(`⏱ TIME:    \t${new Date().toISOString()}`);
+  log.info("===========================================");
 
   printEndpoints();
 });
@@ -42,9 +43,9 @@ function getLocalIp(): string {
 }
 
 function printEndpoints() {
-  console.log("=================================");
-  console.log("📡 REGISTERED ENDPOINTS");
-  console.log("=================================");
+  log.info("=================================");
+  log.info("📡 REGISTERED ENDPOINTS");
+  log.info("=================================");
 
   registeredRoutes.forEach((routeGroup) => {
     const stack = (routeGroup.router as any).stack;
@@ -65,20 +66,20 @@ function printEndpoints() {
           .replace(/\/+/g, "/")
           .replace(/\/$/, "") || "/";
 
-      console.log(
+      log.info(
         `${methods.padEnd(10)} ${fullPath}`
       );
     });
   });
 
-  console.log("=================================");
+  log.info("=================================");
 }
 
 process.on("SIGTERM", () => {
-  console.log("🛑 SIGTERM RECEIVED");
+  log.info("🛑 SIGTERM RECEIVED");
 
   server.close(() => {
-    console.log("💤 Server closed");
+    log.info("💤 Server closed");
     process.exit(0);
   });
 });

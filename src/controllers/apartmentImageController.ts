@@ -17,8 +17,6 @@ import { asyncHandler } from "../utils/asyncHandler";
 export const createApartmentImage = asyncHandler(
   async (req: Request, res: Response) => {
 
-    console.log("📥 POST /apartment-images BODY:", req.body);
-
     const result = apartmentImageSchema.safeParse(req.body);
 
     if (!result.success) {
@@ -50,9 +48,6 @@ export const uploadApartmentImage = asyncHandler(
     const file = req.file;
     const { apartmentId } = req.body;
 
-    console.log("📥 POST /apartment-images BODY:", req.body);
-    console.log("📥 POST /apartment-images FILE:", file);
-
     if (!file) {
       throw new AppError("File is required", 400);
     }
@@ -74,9 +69,6 @@ export const updateApartmentImage = asyncHandler(
   async (req: Request, res: Response) => {
 
     const { id } = req.params;
-
-    console.log(`📥 PATCH /apartment-images/${id}`);
-    console.log("BODY:", req.body);
 
     //
     // CHECK IMAGE EXISTS
@@ -108,8 +100,6 @@ export const removeApartmentImage = asyncHandler(
   async (req: Request, res: Response) => {
 
     const { id } = req.params;
-
-    console.log(`📥 DELETE /apartment-images/${id}`);
 
     if (!id) {
       throw new AppError("Image id is required", 400);

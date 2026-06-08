@@ -25,8 +25,6 @@ export const getApartmentById = asyncHandler(
 
     const { id } = req.params;
 
-    console.log("📥 GET /apartments/", id);
-
     const apartment = await fetchApartmentById(id as string);
 
     if (!apartment) {
@@ -46,10 +44,6 @@ export const searchApartments = asyncHandler(
       guests,
       city
     } = req.query;
-
-    console.log(
-      `📥 GET /apartments/search?from=${from}&to=${to}&guests=${guests}&city=${city}`
-    );
 
     // musi być przynajmniej 1 parametr
     if (
@@ -92,11 +86,6 @@ export const searchApartments = asyncHandler(
           : undefined
       });
 
-    //   console.log(
-    //   '📥 RESPONSE:',
-    //   JSON.stringify(apartments[0], null, 2)
-    // );
-
     return res.json(apartments);
   }
 );
@@ -105,8 +94,6 @@ export const getUnavailableDates = asyncHandler(
   async (req: Request, res: Response) => {
 
     const { id } = req.params;
-
-    console.log(`📥 GET /apartments/${id}/bookings/unavailable-dates`);
 
     const today = new Date().toISOString().split("T")[0];
 
@@ -136,8 +123,6 @@ export const getUnavailableDates = asyncHandler(
 export const createApartment = asyncHandler(
   async (req: Request, res: Response) => {
 
-    console.log("📥 POST /apartments");
-
     const result = apartmentSchema.safeParse(req.body);
 
     if (!result.success) {
@@ -154,8 +139,6 @@ export const updateApartment = asyncHandler(
   async (req: Request, res: Response) => {
 
     const { id } = req.params;
-
-    console.log("✏️ PATCH /apartments:", id);
 
     const result = apartmentSchema.partial().safeParse(req.body);
 
@@ -195,8 +178,6 @@ export const updateApartmentCover = asyncHandler(
     const { id } = req.params;
     const { imageId } = req.body;
 
-    console.log(`📥 PATCH /apartments/${id}/cover`);
-
     if (!imageId) {
       throw new AppError("imageId is required", 400);
     }
@@ -230,8 +211,6 @@ export const getImagesByApartment = asyncHandler(
 export const getApartments = asyncHandler(
   async (req: Request, res: Response) => {
 
-    console.log("📥 GET /apartments");
-
     const apartments = await fetchAllApartments();
 
     return res.json(apartments);
@@ -243,10 +222,7 @@ export const getAvailableApartments = async (
   res: Response
 ) => {
   try {
-    const { from, to, guests } = req.body
-
-    console.log("📥 POST /apartments/available");
-    console.log("📥 BODY:", req.body);
+    const { from, to, guests } = req.body;
 
     const apartments = await fetchApartmentsWithBookings()
 
@@ -274,7 +250,7 @@ export const getAvailableApartments = async (
 
     return res.json(available)
   } catch (error: any) {
-    console.error('❌ AVAILABILITY ERROR:', error.message)
+    // console.error('❌ AVAILABILITY ERROR:', error.message)
 
     return res.status(500).json({
       message: 'Internal server error'
@@ -288,8 +264,6 @@ export const getApartmentPricing = asyncHandler(
 
     const { id } = req.params;
     const { from, to } = req.query;
-
-    console.log(`📥 GET /apartments/${id}/pricing`);
 
     const pricing = await fetchApartmentPricingById(
       id as string ,

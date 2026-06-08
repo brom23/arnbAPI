@@ -77,7 +77,6 @@ export const storeApartmentImage = async (
   // 2. public path EXACT jak w Supabase URL
   const filePath = `${randomUUID()}-${fileName}`;
 
-  console.log("📁 FILE PATH:", filePath);
   // 3. upload do bucketu
   const { error: uploadError } = await supabase.storage
     .from("apartment_images")
@@ -86,7 +85,6 @@ export const storeApartmentImage = async (
       upsert: false, // żeby nadpisywać ten sam plik (opcjonalnie)
     });
 
-    console.log("📁 UPLOAD RESULT:", { uploadError });
   if (uploadError) {
     throw new Error(uploadError.message);
   }
