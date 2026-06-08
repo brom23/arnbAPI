@@ -19,6 +19,7 @@ app.use(requestLogger);
 
 app.use(cookieParser());
 
+app.use(express.static(path.join(process.cwd(), "src/public")));
 //
 // MIDDLEWARES
 //
