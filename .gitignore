@@ -7,9 +7,8 @@ build/
 
 # Env files (SECRETS - NEVER COMMIT)
 .env
-.env.local
-.env.development
-.env.production
+.env.*
+!.env.example
 
 # Logs
 logs/
