@@ -12,8 +12,11 @@ import corsMiddleware from "./cors";
 import cookieParser from "cookie-parser";
 import { requestLogger } from "./middleware/requestLogger";
 import { log } from "./utils/logger";
+import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
+
+app.use(errorHandler);
 
 app.use(requestLogger);
 

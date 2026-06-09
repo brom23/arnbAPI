@@ -113,15 +113,60 @@ paths:
                     type: string
                     example: "Internal server error"
 
-
   /apartments/search:
     get:
       tags:
         - apartments
       summary: Search apartments
+      description: |
+        Search apartments with optional filters.
+
+        Business rules:
+        - from and to must be provided together
+        - from cannot be in the past
+        - minimum stay is 1 night
+
+      parameters:
+
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: 2026-07-01
+          description: Check-in date (YYYY-MM-DD)
+
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: 2026-07-05
+          description: Check-out date (YYYY-MM-DD)
+
+        - name: guests
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            example: 2
+          description: Number of guests
+
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+            example: Warsaw
+          description: City name
+
       responses:
+
         200:
-          description: OK
+          description: List of available apartments
           content:
             application/json:
               schema:
@@ -129,6 +174,38 @@ paths:
                 items:
                   $ref: "#/components/schemas/Apartment"
 
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid request
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                          example: from
+                        message:
+                          type: string
+                          example: Invalid ISO date format (YYYY-MM-DD)
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
 
   /apartments/available:
     post:
@@ -580,6 +657,20 @@ components:
         message:
           type: string
 
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Error message
+
+        code:
+          type: string
+          example: VALIDATION_ERROR
+
+        statusCode:
+          type: integer
+          example: 400
 
     InternalServerError:
       type: object

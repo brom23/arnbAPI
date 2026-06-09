@@ -29,6 +29,16 @@ export const errorHandler = (
     });
   }
 
+   if (err instanceof ZodError) {
+    return res.status(400).json({
+      message: "Validation error",
+      errors: err.issues.map(i => ({
+        field: i.path.join("."),
+        message: i.message
+      }))
+    });
+  }
+
   // ⚙️ AppError (Twoja logika biznesowa)
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({

@@ -151,62 +151,53 @@ export const apartmentParamsSchema = z.object({
 //
 // APARTMENT SEARCH QUERY
 //
-export const apartmentSearchSchema = z.object({
+export const apartmentSearchSchema = z
+  .object({
+    from: z.iso.date().optional(),
 
-  city: z
-    .string()
-    .optional(),
-
-  from: z
-    .string()
-    .date("Invalid from date")
-    .optional(),
-
-  to: z
-    .string()
-    .date("Invalid to date")
-    .optional(),
-
-  guests: z
-    .coerce
-    .number()
-    .int("guests must be integer")
-    .positive("guests must be greater than 0")
-    .optional(),
-
-    page: z
-    .coerce
-    .number()
-    .int()
-    .positive()
-    .default(1),
-
-    limit: z
-    .coerce
-    .number()
-    .int()
-    .positive()
-    .max(100)
-    .default(10),
-})
-.refine(
-  (data) => {
-
-    if (
-      (data.from && !data.to) ||
-      (!data.from && data.to)
-    ) {
-      return false;
+    to: z.iso.date().optional(),
+    city: z.string().optional(),
+    guests: z.coerce
+      .number()
+      .int()
+      .positive()
+      .optional()
+  })
+  .refine(
+    data =>
+      !(
+        (data.from && !data.to) ||
+        (!data.from && data.to)
+      ),
+    {
+      message:
+        "Both from and to must be provided together",
+      path: ["from"]
     }
+  )
+  .refine(
+    data =>
+      !(
+        data.from &&
+        data.to &&
+        new Date(data.from) >= new Date(data.to)
+      ),
+    {
+      message:
+        "Minimum stay is 1 night",
+      path: ["to"]
+    }
+  )  .refine(
+    (data) => {
+      if (!data.from || !data.to) return true;
 
-    return true;
-  },
-  {
-    message:
-      "Both from and to must be provided together",
-    path: ["from"]
-  }
-);
+      return new Date(data.from) <= new Date(data.to);
+    },
+    {
+      message: "'from' cannot be greater than 'to'",
+      path: ["from"]
+    }
+  );
 
 //
 // UPDATE COVER

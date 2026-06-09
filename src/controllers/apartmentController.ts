@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 
 import { getDatesBetween } from "../utils/dates";
-import { apartmentSchema, apartmentSearchSchema } from "../validators/apartmentValidator";
+import { apartmentSchema } from "../validators/apartmentValidator";
+import { dateValidator } from "../validators/dateValidator";
 
 import {
   fetchApartmentById,
@@ -38,56 +39,25 @@ export const getApartmentById = asyncHandler(
 export const searchApartments = asyncHandler(
   async (req: Request, res: Response) => {
 
-    const {
-      from,
-      to,
-      guests,
-      city
-    } = req.query;
+const query = dateValidator.parse(req.query);
 
-    // musi być przynajmniej 1 parametr
-    if (
-      !from &&
-      !to &&
-      !guests &&
-      !city
-    ) {
-      throw new AppError(
-        "At least one search parameter is required",
-        400
-      );
-    }
+// business logic outside Zod
+if (query.from && query.to) {
+  const from = new Date(`${query.from}T00:00:00.000Z`);
+  const to = new Date(`${query.to}T00:00:00.000Z`);
 
-    // from + to muszą być razem
-    if (
-      (from && !to) ||
-      (!from && to)
-    ) {
-      throw new AppError(
-        "Both 'from' and 'to' must be provided together",
-        400
-      );
-    }
+  const diffDays =
+    (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24);
 
-    if (from === to) {
-      throw new AppError(
-        "Minimum stay is 1 night",
-        400
-      )
-    }
-
-    const apartments =
-      await fetchAvailableApartments({
-        from: from as string | undefined,
-        to: to as string | undefined,
-        city: city as string | undefined,
-        guests: guests
-          ? Number(guests)
-          : undefined
-      });
-
-    return res.json(apartments);
+  if (diffDays < 1) {
+    throw new AppError("Minimum stay is 1 night", 400);
   }
+}
+
+const apartments =
+  await fetchAvailableApartments(query);
+
+return res.json(apartments);}
 );
 
 export const getUnavailableDates = asyncHandler(
