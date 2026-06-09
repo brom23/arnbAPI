@@ -1,11 +1,12 @@
-import { supabase } from '../lib/supabase';
+import { supabaseAnon } from '../lib/supabase';
 import { ApartmentPriceMap, ApartmentPricingResponse } from '../types/apartmentPricingResponse';
 import { AppError } from '../utils/AppError';
 import { removeFileFromStorage } from '../utils/storage';
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export const fetchApartments = async () => {
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAnon
         .from('apartments')
         .select('*');
 
@@ -18,7 +19,7 @@ export const fetchApartmentById = async (
   apartmentId: string
 ) => {
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAnon
     .from("apartments")
     .select(`
       *,
@@ -34,7 +35,7 @@ export const fetchApartmentById = async (
   return data;
 };
 
-export const insertApartment = async (payload: any) => {
+export const insertApartment = async (supabase: SupabaseClient, payload: any) => {
 
 
     const { data, error } = await supabase
@@ -57,7 +58,7 @@ export const insertApartment = async (payload: any) => {
     return data;
 };
 
-export const fetchApartmentBookings = async (
+export const fetchApartmentBookings = async (supabase: SupabaseClient,
   apartmentId: string,
   today: string
 ) => {
@@ -75,7 +76,7 @@ export const fetchApartmentBookings = async (
   return data;
 };
 
-export const updateApartmentById = async (
+export const updateApartmentById = async (supabase: SupabaseClient,
     id: string,
     payload: any
 ) => {
@@ -93,7 +94,7 @@ export const updateApartmentById = async (
     return data;
 };
 
-export const deleteApartmentById = async (
+export const deleteApartmentById = async (supabase: SupabaseClient,
   id: string
 ) => {
 
@@ -144,7 +145,7 @@ export const deleteApartmentById = async (
   return data;
 };
 
-export const updateApartmentCover = async (
+export const updateApartmentCover = async (supabase: SupabaseClient,
   apartmentId: string,
   imageId: string
 ) => {
@@ -178,7 +179,7 @@ export const updateApartmentCover = async (
   return data;
 };
 
-export const updateApartmentCoverByImage = async (
+export const updateApartmentCoverByImage = async (supabase: SupabaseClient,
   apartmentId: string,
   imageId: string
 ) => {
@@ -214,7 +215,7 @@ export const updateApartmentCoverByImage = async (
 
 export const fetchImagesByApartmentId = async (apartmentId: string) => {
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAnon
         .from('apartment_images')
         .select('*')
         .eq('apartment_id', apartmentId)
@@ -237,7 +238,7 @@ export const fetchApartmentsPaginated = async (params: {
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  let query = supabase
+  let query = supabaseAnon
     .from("apartments")
     .select("*", { count: "exact" });
 
@@ -299,7 +300,7 @@ export const fetchAvailableApartments = async (params: {
   // ----------------------------
   // 1. znajdź konflikty bookingów
   // ----------------------------
-  const { data: conflicts, error } = await supabase
+  const { data: conflicts, error } = await supabaseAnon
     .from("bookings")
     .select("apartment_id")
     .lt("check_in", to)
@@ -313,7 +314,7 @@ export const fetchAvailableApartments = async (params: {
   // ----------------------------
   // 2. apartments query
   // ----------------------------
-  let query = supabase
+  let query = supabaseAnon
     .from("apartments")
     .select(`
       *,
@@ -347,7 +348,7 @@ export const fetchAvailableApartments = async (params: {
 
 export const fetchApartmentsWithBookings = async () => {
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAnon
     .from('apartments')
     .select(`
       *,
@@ -368,7 +369,7 @@ export const fetchApartmentsWithBookings = async () => {
 
 //wszystkie apartamenty bez zdjec tylko okladka
 export const fetchAllApartments = async () => {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAnon
     .from("apartments")
     .select("*");
 
@@ -392,7 +393,7 @@ export async function fetchApartmentPricingById(
     throw new AppError("Apartment not found", 404);
   }
 
-  let query = supabase
+  let query = supabaseAnon
     .from("apartment_pricing")
     .select("date, price")
     .eq("apartment_id", apartmentId)

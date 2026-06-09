@@ -67,7 +67,7 @@ export const getUnavailableDates = asyncHandler(
 
     const today = new Date().toISOString().split("T")[0];
 
-    const bookings = await fetchApartmentBookings(
+    const bookings = await fetchApartmentBookings(req.supabase!,
       id as string,
       today
     );
@@ -99,7 +99,7 @@ export const createApartment = asyncHandler(
       throw new AppError("Validation error", 400, result.error);
     }
 
-    const apartment = await insertApartment(result.data);
+    const apartment = await insertApartment(req.supabase!, result.data);
 
     return res.status(201).json(apartment);
   }
@@ -116,7 +116,7 @@ export const updateApartment = asyncHandler(
       throw result.error;
     }
 
-    const updated = await updateApartmentById(
+    const updated = await updateApartmentById(req.supabase!,
       id as string,
       result.data
     );
@@ -130,7 +130,7 @@ export const deleteApartment = asyncHandler(
 
     const { id } = req.params;
 
-    const apartment = await deleteApartmentById(id as string);
+    const apartment = await deleteApartmentById(req.supabase!, id as string);
 
     if (!apartment || apartment.length === 0) {
       throw new AppError("Apartment not found", 404);
@@ -152,7 +152,7 @@ export const updateApartmentCover = asyncHandler(
       throw new AppError("imageId is required", 400);
     }
 
-    const apartment = await updateApartmentCoverByImage(
+    const apartment = await updateApartmentCoverByImage(req.supabase!,
       id as string,
       imageId
     );

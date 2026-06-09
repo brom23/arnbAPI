@@ -1,25 +1,17 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
-import { supabase } from "../lib/supabase";
+import { supabaseAdmin } from "../lib/supabase";
+import { AppError } from "../utils/AppError";
 
 export const logoutController = asyncHandler(
   async (req: Request, res: Response) => {
-    try {
-      const accessToken = req.cookies?.access_token;
-
-      if (accessToken) {
-        const { data } =
-          await supabase.auth.getUser(accessToken);
-
-        if (data.user) {
-          await supabase.auth.admin.signOut(
-            data.user.id
-          );
-        }
-      }
-    } catch (err) {
-      console.error("Logout error:", err);
+    if (!req.user?.id) {
+      throw new AppError("Unauthorized", 401);
     }
+
+    await supabaseAdmin.auth.admin.signOut(
+      req.user.id
+    );
 
     res.clearCookie("access_token", {
       httpOnly: true,

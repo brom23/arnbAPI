@@ -19,6 +19,7 @@ const router = Router();
 // PUBLIC 
 //
 router.post("/", createBooking);
+
 router.post(
   "/blocked",
   getBlockedBookings

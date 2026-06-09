@@ -1,6 +1,8 @@
-import { supabase } from '../lib/supabase';
+import { supabaseAnon } from '../lib/supabase';
+import { SupabaseClient } from "@supabase/supabase-js";
 
-export const fetchBookings = async (params: {
+export const fetchBookings = async (supabase: SupabaseClient,
+  params: {
   status?: string;
   apartment_id?: string;
   email?: string;
@@ -42,7 +44,7 @@ export const fetchBookings = async (params: {
   return data ?? [];
 };
 
-export const fetchBookingById= async (id: string) => {
+export const fetchBookingById= async (supabase: SupabaseClient,id: string) => {
 
     const { data, error } = await supabase
         .from('bookings')
@@ -58,7 +60,7 @@ export const fetchBookingById= async (id: string) => {
 
 export const insertBooking = async (payload: any) => {
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAnon
         .from('bookings')
         .insert([
             {
@@ -90,7 +92,7 @@ export const checkApartmentAvailability = async (
     checkOut: string
 ) => {
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAnon
         .from('bookings')
         .select('*')
         .eq('apartment_id', apartmentId)
@@ -104,7 +106,7 @@ export const checkApartmentAvailability = async (
     return data;
 };
 
-export const updateBooking = async (
+export const updateBooking = async (supabase: SupabaseClient,
   id: string,
   payload: any
 ) => {
@@ -123,7 +125,7 @@ export const updateBooking = async (
   return data;
 };
 
-export const deleteBooking = async (
+export const deleteBooking = async (supabase: SupabaseClient,
   id: string
 ) => {
 
@@ -139,7 +141,7 @@ export const deleteBooking = async (
   return true;
 };
 
-export const updateBookingStatus = async (
+export const updateBookingStatus = async (supabase: SupabaseClient,
   id: string,
   status: string
 ) => {
@@ -158,7 +160,7 @@ export const updateBookingStatus = async (
   return data;
 };
 
-export const fetchBookingsByApartmentId = async (
+export const fetchBookingsByApartmentId = async (supabase: SupabaseClient,
   apartmentId: string
 ) => {
 
@@ -242,7 +244,7 @@ export const fetchBlockedBookings = async (
   apartmentId: string
 ) => {
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAnon
     .from("bookings")
     .select("check_in, check_out")
     .eq("apartment_id", apartmentId);

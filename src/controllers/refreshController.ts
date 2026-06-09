@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
-import { supabase } from "../lib/supabase";
+import { supabaseAnon } from "../lib/supabase";
 
 const cookieOptions = {
   httpOnly: true,
@@ -22,7 +22,7 @@ export const refreshController = asyncHandler(
     }
 
     const { data, error } =
-      await supabase.auth.refreshSession({
+      await supabaseAnon.auth.refreshSession({
         refresh_token: refreshToken
       });
 

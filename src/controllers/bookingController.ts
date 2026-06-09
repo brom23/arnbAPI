@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-
 import { bookingSchema } from "../validators/bookingValidator";
 
 import {
@@ -42,7 +41,8 @@ import { asyncHandler } from "../utils/asyncHandler";
 export const getBookings = asyncHandler(
   async (req: Request, res: Response) => {
 
-    const result = await fetchBookings({
+    const result = await fetchBookings(req.supabase!,
+      {
       status: req.query.status as string,
       apartment_id: req.query.apartment_id as string,
       email: req.query.email as string,
@@ -59,7 +59,7 @@ export const getBookingById = asyncHandler(
 
     const { id } = req.params;
 
-    const booking = await fetchBookingById(id as string);
+    const booking = await fetchBookingById(req.supabase!,id as string);
 
     if (!booking) {
       throw new AppError("Booking not found", 404);
@@ -118,7 +118,7 @@ export const updateBookingById = asyncHandler(
       throw result.error;
     }
 
-    const existingBooking = await fetchBookingById(id as string);
+    const existingBooking = await fetchBookingById(req.supabase!,id as string);
 
     if (!existingBooking) {
       throw new AppError("Booking not found", 404);
@@ -169,7 +169,7 @@ export const updateBookingById = asyncHandler(
       }
     }
 
-    const updatedBooking = await updateBooking(
+    const updatedBooking = await updateBooking(req.supabase!,
       id as string,
       result.data
     );
@@ -183,13 +183,13 @@ export const deleteBookingById = asyncHandler(
 
     const { id } = req.params;
 
-    const booking = await fetchBookingById(id as string);
+    const booking = await fetchBookingById(req.supabase!, id as string);
 
     if (!booking) {
       throw new AppError("Booking not found", 404);
     }
 
-    await deleteBooking(id as string);
+    await deleteBooking(req.supabase!,id as string);
 
     return res.status(200).json({
       message: "Booking deleted successfully"
@@ -218,13 +218,13 @@ export const updateBookingStatusById = asyncHandler(
       throw new AppError("Invalid status value", 400);
     }
 
-    const booking = await fetchBookingById(id as string);
+    const booking = await fetchBookingById(req.supabase!,id as string);
 
     if (!booking) {
       throw new AppError("Booking not found", 404);
     }
 
-    const updated = await updateBookingStatus(
+    const updated = await updateBookingStatus(req.supabase!,
       id as string,
       status
     );
@@ -238,7 +238,7 @@ export const getBookingsByApartmentId = asyncHandler(
 
     const { id } = req.params;
 
-    const bookings = await fetchBookingsByApartmentId(
+    const bookings = await fetchBookingsByApartmentId(req.supabase!,
       id as string
     );
 

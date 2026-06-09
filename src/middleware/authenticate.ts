@@ -1,6 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
-
 // type UserPayload = {
 //   id?: string;
 //   email?: string;
@@ -55,40 +53,67 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 // };
 
 
-import { supabase } from "../lib/supabase";
+// import { supabase } from "../lib/supabase";
 
-export const authenticate = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+// export const authenticate = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
 
-  const token =
-    req.cookies.access_token;
+//   const token =
+//     req.cookies.access_token;
+
+//   if (!token) {
+//     return res.status(401).json({
+//       message: "Unauthorized"
+//     });
+//   }
+
+//   const {
+//     data,
+//     error
+//   } = await supabase.auth.getUser(
+//     token
+//   );
+
+//   if (error || !data.user) {
+//     return res.status(401).json({
+//       message: "Unauthorized"
+//     });
+//   }
+
+//   (req as any).user = {
+//     id: data.user.id,
+//     email: data.user.email
+//   };
+
+//   next();
+// };
+
+import { createSupabaseUserClient } from "../lib/supabase";
+
+export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
+  const token = req.cookies.access_token;
 
   if (!token) {
-    return res.status(401).json({
-      message: "Unauthorized"
-    });
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const {
-    data,
-    error
-  } = await supabase.auth.getUser(
-    token
-  );
+  const supabaseUser = createSupabaseUserClient(token);
+
+  const { data, error } = await supabaseUser.auth.getUser();
 
   if (error || !data.user) {
-    return res.status(401).json({
-      message: "Unauthorized"
-    });
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
-  (req as any).user = {
+  // zapisujemy usera i klienta w req
+  req.user = {
     id: data.user.id,
-    email: data.user.email
+    email: data.user.email,
   };
+  req.supabase = supabaseUser;
 
   next();
 };

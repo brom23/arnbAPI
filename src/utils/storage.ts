@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabase";
+import { supabaseAdmin } from "../lib/supabase";
 
 export const removeFileFromStorage = async (
   bucket: string,
@@ -14,7 +14,7 @@ export const removeFileFromStorage = async (
 
   const cleanPath = path.replace(`${bucket}/`, "");
 
-  const { error } = await supabase.storage
+  const { error } = await supabaseAdmin.storage
     .from(bucket)
     .remove([cleanPath]);
 

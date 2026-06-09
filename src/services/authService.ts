@@ -1,13 +1,12 @@
-import { supabase } from "../lib/supabase";
+import { supabaseAnon } from "../lib/supabase";
 import { AppError } from "../utils/AppError";
 
 export async function loginAdmin(
   email: string,
   password: string
 ) {
-
   const { data, error } =
-    await supabase.auth.signInWithPassword({
+    await supabaseAnon.auth.signInWithPassword({
       email,
       password
     });
@@ -20,12 +19,8 @@ export async function loginAdmin(
   }
 
   return {
-    access_token:
-      data.session.access_token,
-
-    refresh_token:
-      data.session.refresh_token,
-
+    access_token: data.session.access_token,
+    refresh_token: data.session.refresh_token,
     user: {
       id: data.user.id,
       email: data.user.email

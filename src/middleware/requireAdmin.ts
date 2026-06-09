@@ -17,7 +17,7 @@
 
 // src/middleware/requireAdmin.ts
 import { Request, Response, NextFunction } from "express";
-import { supabase } from "../lib/supabase";
+//import { supabase } from "../lib/supabase";
 import { AppError } from "../utils/AppError";
 
 export const requireAdmin = async (
@@ -25,14 +25,15 @@ export const requireAdmin = async (
   res: Response,
   next: NextFunction
 ) => {
-  const user = (req as any).user;
+  const user = req.user;
+  const supabaseUser = req.supabase;
 
-  if (!user?.id) {
+  if (!user?.id || !supabaseUser) {
     throw new AppError("Unauthorized", 401);
   }
 
   // Sprawdź w bazie czy user.id istnieje w tabeli adminów
-  const { data, error } = await supabase
+  const { data, error } = await supabaseUser
     .from("admin_users")
     .select("id")
     .eq("id", user.id)

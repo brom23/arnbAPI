@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
-import { supabase } from "../lib/supabase";
+import { supabaseAnon } from "../lib/supabase";
 
 export const meController = asyncHandler(
   async (req: Request, res: Response) => {
@@ -12,7 +12,7 @@ export const meController = asyncHandler(
     }
 
     const { data, error } =
-      await supabase.auth.getUser(accessToken);
+      await supabaseAnon.auth.getUser(accessToken);
 
     if (error || !data.user) {
       throw new AppError("Unauthorized", 401);

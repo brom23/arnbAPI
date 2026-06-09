@@ -26,6 +26,10 @@ app.use(express.static(path.join(process.cwd(), "src/public")));
 //
 // MIDDLEWARES
 //
+import { supabaseContext } from "./middleware/supabaseContext";
+
+app.use(supabaseContext);
+
 app.use(express.json());
 //remove cashe-control replaced response code 304 -> 200
 app.use((req, res, next) => {

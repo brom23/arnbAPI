@@ -1,10 +1,10 @@
 import { randomUUID } from 'crypto';
-import { supabase } from '../lib/supabase';
+import { supabaseAnon,supabaseAdmin } from '../lib/supabase';
 import { removeFileFromStorage } from '../utils/storage';
 
 export const insertApartmentImage = async (payload: any) => {
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAnon
         .from('apartment_images')
         .insert([
             {
@@ -24,7 +24,7 @@ export const insertApartmentImage = async (payload: any) => {
 
 export const fetchApartmentImages = async () => {
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAnon
         .from('apartment_images')
         .select('*')
         .order('position', { ascending: true });
@@ -38,7 +38,7 @@ export const fetchApartmentImageById = async (
   id: string
 ) => {
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAnon
     .from("apartment_images")
     .select("*")
     .eq("id", id)
@@ -78,7 +78,7 @@ export const storeApartmentImage = async (
   const filePath = `${randomUUID()}-${fileName}`;
 
   // 3. upload do bucketu
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await supabaseAdmin.storage
     .from("apartment_images")
     .upload(filePath, file.buffer, {
       contentType: file.mimetype,
@@ -94,7 +94,7 @@ export const storeApartmentImage = async (
     `https://hhprezzotbbatuqjihry.supabase.co/storage/v1/object/public/apartment_images/${filePath}`;
 
   // 5. zapis do bazy
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("apartment_images")
     .insert([
       {
@@ -120,7 +120,7 @@ export const updateApartmentImageById = async (
 ) => {
 
   const { data: updatedImage, error } =
-    await supabase
+    await supabaseAdmin
       .from("apartment_images")
       .update(data)
       .eq("id", id)
@@ -139,7 +139,7 @@ export const deleteApartmentImage = async (
 ) => {
 
   // 1. Pobierz image
-  const { data: image, error: fetchError } = await supabase
+  const { data: image, error: fetchError } = await supabaseAnon
     .from("apartment_images")
     .select("*")
     .eq("id", id)
@@ -156,7 +156,7 @@ export const deleteApartmentImage = async (
   );
 
   // 3. Usuń rekord z DB
-  const { error: deleteError } = await supabase
+  const { error: deleteError } = await supabaseAdmin
     .from("apartment_images")
     .delete()
     .eq("id", id);
