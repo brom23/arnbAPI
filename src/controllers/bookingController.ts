@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { bookingSchema } from "../validators/bookingValidator";
+import { bookingSchema, updateBookingSchema } from "../validators/bookingValidator";
 
 import {
   fetchBookingById,
@@ -18,25 +18,6 @@ import { getPagination } from "../utils/pagination";
 
 import { AppError } from "../utils/AppError";
 import { asyncHandler } from "../utils/asyncHandler";
-
-// export const getBookings = asyncHandler(
-//   async (req: Request, res: Response) => {
-
-//     const { page, limit } = getPagination(req.query);
-
-//     const result = await fetchBookingsPaginated({
-//       page,
-//       limit,
-//       status: req.query.status as string,
-//       apartment_id: req.query.apartment_id as string,
-//       email: req.query.email as string,
-//       fromDate: req.query.fromDate as string,
-//       toDate: req.query.toDate as string
-//     });
-
-//     return res.json(result);
-//   }
-// );
 
 export const getBookings = asyncHandler(
   async (req: Request, res: Response) => {
@@ -71,27 +52,18 @@ export const getBookingById = asyncHandler(
 
 export const createBooking = asyncHandler(
   async (req: Request, res: Response) => {
-
     const result = bookingSchema.safeParse(req.body);
 
     if (!result.success) {
       throw result.error;
     }
 
-    if (
-      new Date(result.data.check_out) <=
-      new Date(result.data.check_in)
-    ) {
-      throw new AppError(
-        "check_out must be after check_in",
-        400
-      );
-    }
+    const bookingData = result.data;
 
     const conflicts = await checkApartmentAvailability(
-      result.data.apartment_id,
-      result.data.check_in,
-      result.data.check_out
+      bookingData.apartment_id,
+      bookingData.check_in,
+      bookingData.check_out
     );
 
     if (conflicts.length > 0) {
@@ -101,7 +73,7 @@ export const createBooking = asyncHandler(
       );
     }
 
-    const booking = await insertBooking(result.data);
+    const booking = await insertBooking(bookingData);
 
     return res.status(201).json(booking);
   }

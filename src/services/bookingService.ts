@@ -1,5 +1,6 @@
 import { supabaseAnon } from '../lib/supabase';
 import { SupabaseClient } from "@supabase/supabase-js";
+import type { UpdateBookingDto } from "../validators/bookingValidator";
 
 export const fetchBookings = async (supabase: SupabaseClient,
   params: {
@@ -57,33 +58,53 @@ export const fetchBookingById= async (supabase: SupabaseClient,id: string) => {
     return data;
 };
 
+import type { CreateBookingDto } from "../validators/bookingValidator";
 
-export const insertBooking = async (payload: any) => {
+export const insertBooking = async (
+  payload: CreateBookingDto
+) => {
+  const { data, error } = await supabaseAnon
+    .from("bookings")
+    .insert([
+      {
+        apartment_id: payload.apartment_id,
 
-    const { data, error } = await supabaseAnon
-        .from('bookings')
-        .insert([
-            {
-                apartment_id: payload.apartment_id,
-                check_in: payload.check_in,
-                check_out: payload.check_out,
-                guests: payload.guests,
-                email: payload.email,
+        check_in: payload.check_in,
+        check_out: payload.check_out,
 
-                total_price: payload.total_price ?? null,
-                status: payload.status ?? 'pending',
-                // dodaj 15 minut od teraz jako hold_expires_at
-                hold_expires_at: new Date(
-                                    Date.now() + 15 * 60 * 1000
-                                    ).toISOString(),
-                created_at: new Date().toISOString()
-            }
-        ])
-        .select();
+        guests: payload.guests,
 
-    if (error) throw error;
+        email: payload.email,
+        total_price: payload.total_price,
 
-    return data;
+        first_name: payload.first_name,
+        last_name: payload.last_name,
+        phone: payload.phone,
+
+        city: payload.city,
+        zip: payload.zip,
+        street: payload.street,
+        country: payload.country,
+
+        notes: payload.notes ?? "",
+
+        status: "pending",
+
+        hold_expires_at: new Date(
+          Date.now() + 15 * 60 * 1000
+        ).toISOString(),
+
+        created_at: new Date().toISOString()
+      }
+    ])
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 };
 
 export const checkApartmentAvailability = async (
@@ -106,14 +127,72 @@ export const checkApartmentAvailability = async (
     return data;
 };
 
-export const updateBooking = async (supabase: SupabaseClient,
+export const updateBooking = async (
+  supabase: SupabaseClient,
   id: string,
-  payload: any
+  payload: UpdateBookingDto
 ) => {
+  const updateData: UpdateBookingDto = {
+    ...(payload.apartment_id !== undefined && {
+      apartment_id: payload.apartment_id
+    }),
+
+    ...(payload.check_in !== undefined && {
+      check_in: payload.check_in
+    }),
+
+    ...(payload.check_out !== undefined && {
+      check_out: payload.check_out
+    }),
+
+    ...(payload.guests !== undefined && {
+      guests: payload.guests
+    }),
+
+    ...(payload.email !== undefined && {
+      email: payload.email
+    }),
+
+    ...(payload.total_price !== undefined && {
+      total_price: payload.total_price
+    }),
+
+    ...(payload.first_name !== undefined && {
+      first_name: payload.first_name
+    }),
+
+    ...(payload.last_name !== undefined && {
+      last_name: payload.last_name
+    }),
+
+    ...(payload.phone !== undefined && {
+      phone: payload.phone
+    }),
+
+    ...(payload.city !== undefined && {
+      city: payload.city
+    }),
+
+    ...(payload.zip !== undefined && {
+      zip: payload.zip
+    }),
+
+    ...(payload.street !== undefined && {
+      street: payload.street
+    }),
+
+    ...(payload.country !== undefined && {
+      country: payload.country
+    }),
+
+    ...(payload.notes !== undefined && {
+      notes: payload.notes
+    })
+  };
 
   const { data, error } = await supabase
     .from("bookings")
-    .update(payload)
+    .update(updateData)
     .eq("id", id)
     .select()
     .single();

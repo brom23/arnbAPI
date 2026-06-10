@@ -1,11 +1,169 @@
 paths:
 
+  /bookings:
+    post:
+      tags:
+        - bookings
+      summary: Create new booking
+      description: Public endpoint. Creates booking with default "pending" status.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - apartment_id
+                - check_in
+                - check_out
+                - guests
+                - email
+                - total_price
+                - first_name
+                - last_name
+                - phone
+                - city
+                - zip
+                - street
+                - country
+
+              properties:
+                apartment_id:
+                  type: string
+                  format: uuid
+                  example: "836a7a1e-e435-45a1-b9f0-acc10381a83b"
+
+                check_in:
+                  type: string
+                  format: date
+                  example: "2026-06-14"
+
+                check_out:
+                  type: string
+                  format: date
+                  example: "2026-06-17"
+
+                guests:
+                  type: integer
+                  example: 2
+
+                email:
+                  type: string
+                  format: email
+                  example: "test@email.com"
+
+                total_price:
+                  type: number
+                  example: 600
+
+                first_name:
+                  type: string
+                  example: "Jan"
+
+                last_name:
+                  type: string
+                  example: "Kowalski"
+
+                phone:
+                  type: string
+                  example: "500600700"
+
+                city:
+                  type: string
+                  example: "Warszawa"
+
+                zip:
+                  type: string
+                  example: "00-001"
+
+                street:
+                  type: string
+                  example: "Marszałkowska 10"
+
+                country:
+                  type: string
+                  example: "Polska"
+
+                notes:
+                  type: string
+                  example: "Late check-in"
+
+      responses:
+        201:
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+        400:
+          description: Validation error
+
+        409:
+          description: Apartment not available
+
+    get:
+      tags:
+        - bookings
+      summary: Get all bookings (ADMIN ONLY)
+      security:
+        - cookieAuth: []
+      description: |
+        Returns all bookings.
+        Filters are optional (status, apartment_id, email, date range).
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled, completed]
+
+        - name: apartment_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+
+        - name: email
+          in: query
+          schema:
+            type: string
+            format: email
+
+        - name: fromDate
+          in: query
+          schema:
+            type: string
+            format: date
+
+        - name: toDate
+          in: query
+          schema:
+            type: string
+            format: date
+
+      responses:
+        200:
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+
+
   /bookings/blocked:
     post:
       tags:
         - bookings
       summary: Get blocked dates for apartment
-
+      description: Public endpoint. Returns booked date ranges.
       requestBody:
         required: true
         content:
@@ -34,102 +192,19 @@ paths:
                       properties:
                         from:
                           type: string
-                          format: date-time
+                          format: date
                         to:
                           type: string
-                          format: date-time
+                          format: date
 
-  /bookings:
-    get:
-      tags:
-        - bookings
-      summary: Get all bookings (ADMIN ONLY)
-      cookieAuth: []
-
-      description: |
-        Returns all bookings.
-        All query params are optional — if none provided, returns all bookings.
-
-        NOTE: page and limit are currently ignored (no pagination in backend).
-
-      parameters:
-
-        - name: status
-          in: query
-          required: false
-          schema:
-            type: string
-            example: pending
-
-        - name: apartment_id
-          in: query
-          required: false
-          schema:
-            type: string
-            format: uuid
-
-        - name: email
-          in: query
-          required: false
-          schema:
-            type: string
-            format: email
-
-        - name: fromDate
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-
-        - name: toDate
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-
-      responses:
-        200:
-          description: List of bookings
-          content:
-            application/json:
-              schema:
-                type: array
-
-              example:
-                - id: "6a49b903-d55c-4ea2-9077-785a56662c3e"
-                  apartment_id: "194d18a1-2109-4fa2-9c37-939d85ea8b1e"
-                  check_in: "2026-05-29"
-                  check_out: "2026-05-30"
-                  guests: 2
-                  email: "adam.nowak@email.com"
-                  status: "pending"
-                  created_at: "2026-05-28T13:07:15.736489"
-                  hold_expires_at: null
-                  total_price: 100
-                  price_total: 100
-                  first_name: "Adam"
-                  last_name: "Nowak"
-                  phone: "555555555"
-                  city: "Warszawa"
-                  zip: "23-344"
-                  street: "Królewska 2"
-                  country: "Polska"
-                  notes: "Please be clean"
-
-        401:
-          description: Unauthorized
-
-        500:
-          description: Internal server error
 
   /bookings/{id}:
     get:
       tags:
         - bookings
-      summary: Get booking by ID
-      cookieAuth: []
+      summary: Get booking by ID (ADMIN ONLY)
+      security:
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -144,19 +219,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Booking"
-
         404:
           description: Booking not found
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
 
     patch:
       tags:
         - bookings
-      summary: Update booking
-      cookieAuth: []
+      summary: Update booking (ADMIN ONLY)
+      security:
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
           required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -165,31 +247,44 @@ paths:
               $ref: "#/components/schemas/UpdateBooking"
       responses:
         200:
-          description: Updated booking
+          description: Booking updated
+        404:
+          description: Booking not found
 
     delete:
       tags:
         - bookings
-      summary: Delete booking
-      cookieAuth: []
+      summary: Delete booking (ADMIN ONLY)
+      security:
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
           required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         200:
-          description: Deleted booking
+          description: Booking deleted
+        404:
+          description: Booking not found
+
 
   /bookings/{id}/status:
     patch:
       tags:
         - bookings
-      summary: Update booking status
-      cookieAuth: []
+      summary: Update booking status (ADMIN ONLY)
+      security:
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
           required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -202,21 +297,29 @@ paths:
                 status:
                   type: string
                   enum: [pending, confirmed, cancelled, completed]
-
       responses:
         200:
           description: Status updated
+        400:
+          description: Invalid status
+        404:
+          description: Booking not found
+
 
   /bookings/apartment/{id}:
     get:
       tags:
         - bookings
-      summary: Get bookings by apartment ID
-      cookieAuth: []
+      summary: Get bookings by apartment ID (ADMIN ONLY)
+      security:
+        - cookieAuth: []
       parameters:
         - name: id
           in: path
           required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         200:
           description: Bookings list
@@ -227,9 +330,66 @@ paths:
                 items:
                   $ref: "#/components/schemas/Booking"
 
+
 components:
 
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+
   schemas:
+
+    CreateBooking:
+      type: object
+      required:
+        - apartment_id
+        - check_in
+        - check_out
+        - guests
+        - email
+        - total_price
+        - first_name
+        - last_name
+        - phone
+        - city
+        - zip
+        - street
+        - country
+      properties:
+        apartment_id:
+          type: string
+          format: uuid
+        check_in:
+          type: string
+          format: date
+        check_out:
+          type: string
+          format: date
+        guests:
+          type: integer
+        email:
+          type: string
+          format: email
+        total_price:
+          type: number
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone:
+          type: string
+        city:
+          type: string
+        zip:
+          type: string
+        street:
+          type: string
+        country:
+          type: string
+        notes:
+          type: string
 
     Booking:
       type: object
@@ -251,12 +411,12 @@ components:
         email:
           type: string
           format: email
+
         status:
           type: string
+          enum: [pending, confirmed, cancelled, completed]
 
         total_price:
-          type: number
-        price_total:
           type: number
 
         first_name:
@@ -274,40 +434,22 @@ components:
           type: string
         country:
           type: string
+
         notes:
           type: string
 
         hold_expires_at:
           type: string
-          nullable: true
           format: date-time
+          nullable: true
 
         created_at:
           type: string
           format: date-time
 
-    AdminBookingResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/Booking"
-
-        pagination:
-          type: object
-          properties:
-            page:
-              type: integer
-            limit:
-              type: integer
-            total:
-              type: integer
-            totalPages:
-              type: integer
-
     UpdateBooking:
       type: object
+      description: Partial update of booking (admin only)
       properties:
         apartment_id:
           type: string
@@ -323,11 +465,21 @@ components:
         email:
           type: string
           format: email
-        status:
+        total_price:
+          type: number
+        first_name:
           type: string
-
-    BookingNotFound:
-      type: object
-      properties:
-        message:
+        last_name:
+          type: string
+        phone:
+          type: string
+        city:
+          type: string
+        zip:
+          type: string
+        street:
+          type: string
+        country:
+          type: string
+        notes:
           type: string
