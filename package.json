@@ -10,7 +10,7 @@
     "node": ">=20 <23"
   },
   "scripts": {
-    "dev": "ts-node src/server.ts",
+    "dev": "nodemon --exec ts-node --files src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
