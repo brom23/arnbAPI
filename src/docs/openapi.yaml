@@ -69,6 +69,9 @@ paths:
   /apartments/{id}/pricing:
     $ref: "./apartments.yaml#/paths/~1apartments~1{id}~1pricing"
 
+  /apartments/{id}/status:
+    $ref: "./apartments.yaml#/paths/~1apartments~1{id}~1status"
+
   /apartments/{id}/bookings/unavailable-dates:
     $ref: "./apartments.yaml#/paths/~1apartments~1{id}~1bookings~1unavailable-dates"
 

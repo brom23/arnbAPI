@@ -15,7 +15,8 @@ import {
   fetchAvailableApartments,
   fetchApartmentsWithBookings,
   fetchAllApartments,
-  fetchApartmentPricingById
+  fetchApartmentPricingById,
+  updateApartmentStatus as updateApartmentStatusService
 } from "../services/apartmentService";
 
 import { AppError } from "../utils/AppError";
@@ -242,5 +243,20 @@ export const getApartmentPricing = asyncHandler(
     );
 
     return res.json(pricing);
+  }
+);
+
+export const updateApartmentStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const { status } = req.body;
+
+    if (!status) {
+      throw new AppError("status is required", 400);
+    }
+
+    const updated = await updateApartmentStatusService(req.supabase!,id as string, status);
+
+    return res.json(updated);
   }
 );

@@ -435,3 +435,51 @@ export async function fetchApartmentPricingById(
 
   return { prices };
 }
+
+export const updateApartmentStatus = async (
+  supabase: SupabaseClient,
+  id: string,
+  status: string
+) => {
+  const { data, error } = await supabase
+    .from("apartments")
+    .update({ status })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  if (!data) {
+    throw new AppError("Apartment not found", 404);
+  }
+
+  return data;
+};
+
+export const updateApartmentPricingBulk = async (
+  supabase: SupabaseClient,
+  apartmentId: string,
+  prices: {
+    date: string;
+    price: number;
+  }[]
+) => {
+
+  const rows = prices.map((item) => ({
+    apartment_id: apartmentId,
+    date: item.date,
+    price: item.price
+  }));
+
+  const { data, error } = await supabase
+    .from("apartment_pricing")
+    .upsert(rows, {
+      onConflict: "apartment_id,date"
+    })
+    .select();
+
+  if (error) throw error;
+
+  return data;
+};

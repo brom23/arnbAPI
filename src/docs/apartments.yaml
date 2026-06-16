@@ -69,6 +69,7 @@ paths:
               amenities: "wifi, kitchen, tv"
               beds: 2
               min_guests: 1
+
       responses:
         201:
           description: Apartment created successfully
@@ -78,40 +79,18 @@ paths:
                 $ref: "#/components/schemas/Apartment"
 
         400:
-          description: Validation error (Zod)
+          description: Validation error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Validation error"
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        field:
-                          type: string
-                        message:
-                          type: string
-              example:
-                message: "Validation error"
-                errors:
-                  - field: "title"
-                    message: "Title is required"
+                $ref: "#/components/schemas/ValidationErrorResponse"
 
         500:
           description: Internal server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Internal server error"
+                $ref: "#/components/schemas/ErrorResponse"
 
   /apartments/search:
     get:
@@ -179,22 +158,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Invalid request
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        field:
-                          type: string
-                          example: from
-                        message:
-                          type: string
-                          example: Invalid ISO date format (YYYY-MM-DD)
+                $ref: "#/components/schemas/ValidationErrorResponse"
 
         500:
           description: Internal server error
@@ -274,7 +238,11 @@ paths:
                 $ref: "#/components/schemas/Apartment"
 
         404:
-          description: Not found
+          description: Apartment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
     patch:
       tags:
@@ -341,6 +309,26 @@ paths:
         200:
           description: Updated
 
+        400:
+          description: imageId is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        404:
+          description: Apartment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /apartments/{id}/images:
     get:
@@ -354,6 +342,13 @@ paths:
       responses:
         200:
           description: OK
+
+        404:
+          description: No images found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /apartments/{id}/pricing:
     get:
@@ -411,34 +406,154 @@ paths:
                   "2026-05-29": 101
 
         400:
-          description: Invalid query parameters
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-              examples:
-                missingTo:
-                  value:
-                    message: "Query parameter 'to' is required when 'from' is provided"
-                missingFrom:
-                  value:
-                    message: "Query parameter 'from' is required when 'to' is provided"
+                $ref: "#/components/schemas/ErrorResponse"
 
         404:
-          description: Not found
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+                $ref: "#/components/schemas/ErrorResponse"
+
+        500:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    patch:
+      tags:
+        - apartments
+      summary: Bulk update apartment pricing
+      description: |
+        Creates or updates apartment pricing records.
+
+        Existing dates are updated.
+        Missing dates are inserted.
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              minItems: 1
+              items:
+                $ref: "#/components/schemas/ApartmentPriceUpdate"
+            example:
+              - date: "2026-12-24"
+                price: 1200
+              - date: "2026-12-25"
+                price: 1500
+              - date: "2026-12-26"
+                price: 1400
+
+      responses:
+        200:
+          description: Pricing updated successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApartmentPricing"
+
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        404:
+          description: Apartment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
         500:
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"  
+
+  /apartments/{id}/status:
+    patch:
+      tags:
+        - apartments
+      summary: Update apartment status
+      description: Updates apartment status.
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  example: active
+
+            example:
+              status: active
+
+      responses:
+        200:
+          description: Apartment status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Apartment"
+
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                message: status is required
+
+        404:
+          description: Apartment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                message: Apartment not found
+
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                message: Internal server error
 
   /apartments/{id}/bookings/unavailable-dates:
     get:
@@ -488,72 +603,97 @@ components:
         id:
           type: string
           format: uuid
+
         title:
           type: string
+
         slug:
           type: string
           nullable: true
+
         description:
           type: string
+
         price_per_night:
           type: number
+
         guests:
           type: integer
+
         city:
           type: string
+
         image:
           type: string
           nullable: true
+
         created_at:
           type: string
           format: date-time
+
         base_price:
           type: number
+          nullable: true
+
         max_rooms:
           type: integer
+          nullable: true
+
         cancellation_type:
           type: string
+          nullable: true
+
         apartment_number:
           type: string
+          nullable: true
+
         floor:
           type: string
+          nullable: true
+
         staircase:
           type: string
+          nullable: true
+
         has_balcony:
           type: boolean
+          nullable: true
+
         amenities:
           type: string
+          nullable: true
+
         beds:
           type: integer
+          nullable: true
+
         min_guests:
           type: integer
+          nullable: true
+
         title_en:
           type: string
+          nullable: true
+
         description_en:
           type: string
+          nullable: true
+
         amenities_en:
           type: string
+          nullable: true
 
-    ApartmentBooking:
-      type: object
-      properties:
-        check_in:
+        bathrooms:
+          type: integer
+          nullable: true
+
+        size:
+          type: number
+          nullable: true
+
+        status:
           type: string
-          format: date
-        check_out:
-          type: string
-          format: date
-
-
-    AvailableApartment:
-      allOf:
-        - $ref: "#/components/schemas/Apartment"
-        - type: object
-          properties:
-            bookings:
-              type: array
-              items:
-                $ref: "#/components/schemas/ApartmentBooking"
+          nullable: true
 
     CreateApartment:
       type: object
@@ -566,71 +706,34 @@ components:
       properties:
         title:
           type: string
-          example: "Loft Premium"
+        description:
+          type: string
+        price_per_night:
+          type: number
+        guests:
+          type: integer
+        city:
+          type: string
 
-      description:
-        type: string
-        example: "Nowoczesny apartament w centrum miasta"
+    ApartmentBooking:
+      type: object
+      properties:
+        check_in:
+          type: string
+          format: date
+        check_out:
+          type: string
+          format: date
 
-      price_per_night:
-        type: number
-        example: 420
-
-      guests:
-        type: integer
-        example: 2
-
-      city:
-        type: string
-        example: "Kraków"
-
-      slug:
-        type: string
-        nullable: true
-
-      image:
-        type: string
-        nullable: true
-
-      base_price:
-        type: number
-        nullable: true
-
-      max_rooms:
-        type: integer
-        nullable: true
-
-      cancellation_type:
-        type: string
-        nullable: true
-
-      apartment_number:
-        type: string
-        nullable: true
-
-      floor:
-        type: string
-        nullable: true
-
-      staircase:
-        type: string
-        nullable: true
-
-      has_balcony:
-        type: boolean
-        nullable: true
-
-      amenities:
-        type: string
-        nullable: true
-
-      beds:
-        type: integer
-        nullable: true
-
-      min_guests:
-        type: integer
-        nullable: true
+    AvailableApartment:
+      allOf:
+        - $ref: "#/components/schemas/Apartment"
+        - type: object
+          properties:
+            bookings:
+              type: array
+              items:
+                $ref: "#/components/schemas/ApartmentBooking"
 
     UpdateApartment:
       type: object
@@ -640,40 +743,72 @@ components:
         description:
           type: string
 
-
-    CreateApartmentImage:
-      type: object
-      properties:
-        apartment_id:
-          type: string
-          format: uuid
-        image_url:
-          type: string
-
-
     ApartmentNotFound:
       type: object
       properties:
         message:
           type: string
+          example: Apartment not found
 
     ErrorResponse:
       type: object
       properties:
         message:
           type: string
-          example: Error message
+          example: Apartment not found
 
-        code:
+    ValidationErrorResponse:
+      type: object
+      properties:
+        message:
           type: string
-          example: VALIDATION_ERROR
+          example: Validation error
 
-        statusCode:
-          type: integer
-          example: 400
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: from
+
+              message:
+                type: string
+                example: Invalid ISO date format (YYYY-MM-DD)
 
     InternalServerError:
       type: object
       properties:
         message:
           type: string
+          example: Internal server error
+
+    ApartmentPriceUpdate:
+      type: object
+      required:
+        - date
+        - price
+      properties:
+        date:
+          type: string
+          format: date
+          example: "2026-12-24"
+
+        price:
+          type: number
+          example: 1200
+
+    ApartmentPricing:
+      type: object
+      properties:
+        apartment_id:
+          type: string
+          format: uuid
+
+        date:
+          type: string
+          format: date
+
+        price:
+          type: number
