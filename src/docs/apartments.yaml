@@ -421,7 +421,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/InternalServerError"
 
     patch:
       tags:
@@ -487,7 +487,66 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"  
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags:
+        - apartments
+      summary: Delete apartment pricing (single or range)
+      description: |
+        Deletes pricing overrides for a given apartment.
+
+        Rules:
+        - from is required
+        - if only from → deletes single date
+        - if from + to → deletes range inclusive
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-12-01"
+
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2026-12-31"
+
+    responses:
+      200:
+        description: Pricing deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Pricing deleted successfully"
+
+      400:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+
+      500:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InternalServerError"
 
   /apartments/{id}/status:
     patch:

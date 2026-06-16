@@ -457,29 +457,57 @@ export const updateApartmentStatus = async (
   return data;
 };
 
-export const updateApartmentPricingBulk = async (
+export const upsertApartmentPricingService = async (
   supabase: SupabaseClient,
   apartmentId: string,
-  prices: {
-    date: string;
-    price: number;
-  }[]
+  items: { date: string; price: number }[]
 ) => {
 
-  const rows = prices.map((item) => ({
+  const payload = items.map((i) => ({
     apartment_id: apartmentId,
-    date: item.date,
-    price: item.price
+    date: i.date,
+    price: i.price,
   }));
 
   const { data, error } = await supabase
     .from("apartment_pricing")
-    .upsert(rows, {
-      onConflict: "apartment_id,date"
+    .upsert(payload, {
+      onConflict: "apartment_id,date",
     })
     .select();
 
   if (error) throw error;
 
   return data;
+};
+
+export const deleteApartmentPricingService = async (
+  supabase: SupabaseClient,
+  apartmentId: string,
+  from: string,
+  to?: string
+) => {
+
+  let query = supabase
+    .from("apartment_pricing")
+    .delete()
+    .eq("apartment_id", apartmentId);
+
+  // only one day
+  if (!to) {
+    const { error } = await query.eq("date", from);
+
+    if (error) throw error;
+
+    return { message: "Pricing deleted successfully" };
+  }
+
+  // range delete
+  const { error } = await query
+    .gte("date", from)
+    .lte("date", to);
+
+  if (error) throw error;
+
+  return { message: "Pricing range deleted successfully" };
 };

@@ -16,7 +16,9 @@ import {
   fetchApartmentsWithBookings,
   fetchAllApartments,
   fetchApartmentPricingById,
-  updateApartmentStatus as updateApartmentStatusService
+  updateApartmentStatus as updateApartmentStatusService,
+  upsertApartmentPricingService,
+  deleteApartmentPricingService
 } from "../services/apartmentService";
 
 import { AppError } from "../utils/AppError";
@@ -258,5 +260,38 @@ export const updateApartmentStatus = asyncHandler(
     const updated = await updateApartmentStatusService(req.supabase!,id as string, status);
 
     return res.json(updated);
+  }
+);
+
+export const upsertApartmentPricing = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const data = await upsertApartmentPricingService(
+    req.supabase!,
+    id as string,
+    req.body
+  );
+
+  res.json(data);
+});
+
+export const deleteApartmentPricing = asyncHandler(
+  async (req: Request, res: Response) => {
+
+    const { id } = req.params;
+    const { from, to } = req.query;
+
+    if (!from || typeof from !== "string") {
+      throw new AppError("from is required", 400);
+    }
+
+    const result = await deleteApartmentPricingService(
+      req.supabase!,
+      id as string,
+      from,
+      typeof to === "string" ? to : undefined
+    );
+
+    return res.json(result);
   }
 );

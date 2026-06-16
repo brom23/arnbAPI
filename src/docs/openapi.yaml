@@ -81,6 +81,15 @@ paths:
   # 📅 BOOKINGS
   /bookings:
     $ref: "./bookings.yaml#/paths/~1bookings"
+
+  /bookings/calendar:
+    $ref: "./bookings.yaml#/paths/~1bookings~1calendar"
+
+  /bookings/{id}/cancel:
+    $ref: "./bookings.yaml#/paths/~1bookings~1{id}~1cancel"
+
+  /bookings/{id}/confirm:
+    $ref: "./bookings.yaml#/paths/~1bookings~1{id}~1confirm"
   
   /bookings/{id}/status:
     $ref: "./bookings.yaml#/paths/~1bookings~1{id}~1status"

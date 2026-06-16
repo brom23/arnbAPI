@@ -11,13 +11,15 @@ import {
   fetchBookingsByApartmentId,
   //fetchBookingsPaginated,
   fetchBlockedBookings,
-  fetchBookings
+  fetchBookings,
+  getBookingsCalendarService,
+  confirmBookingService,
+  cancelBookingService
 } from "../services/bookingService";
-
-import { getPagination } from "../utils/pagination";
 
 import { AppError } from "../utils/AppError";
 import { asyncHandler } from "../utils/asyncHandler";
+
 
 export const getBookings = asyncHandler(
   async (req: Request, res: Response) => {
@@ -247,3 +249,36 @@ export const getBlockedBookings = asyncHandler(
     return res.json({ blocked });
   }
 );
+
+import { dateRangeValidator } from "../validators/dateRangeValidator";
+
+export const getBookingsCalendar = asyncHandler(
+  async (req: Request, res: Response) => {
+
+    const query = dateRangeValidator.parse(req.query);
+
+    const bookings = await getBookingsCalendarService(
+      req.supabase!,
+      query.from,
+      query.to
+    );
+
+    return res.json(bookings);
+  }
+);
+
+export const cancelBookingController = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const result = await cancelBookingService(req.supabase!, id as string);
+
+  return res.json(result);
+});
+
+export const confirmBookingController = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const result = await confirmBookingService(req.supabase!, id as string);
+
+  return res.json(result);
+});

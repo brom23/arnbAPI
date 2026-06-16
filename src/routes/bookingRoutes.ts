@@ -10,7 +10,8 @@ import {
   updateBookingById,
   deleteBookingById,
   updateBookingStatusById,
-  getBlockedBookings
+  getBlockedBookings,
+  getBookingsCalendar
 } from "../controllers/bookingController";
 
 const router = Router();
@@ -52,6 +53,13 @@ router.patch(
   updateBookingById
 );
 
+router.delete(
+  "/:id",
+  authenticate,
+  requireAdmin,
+  deleteBookingById
+);
+
 router.patch(
   "/:id/status",
   authenticate,
@@ -59,11 +67,10 @@ router.patch(
   updateBookingStatusById
 );
 
-router.delete(
-  "/:id",
+router.get(
+  "/calendar",
   authenticate,
-  requireAdmin,
-  deleteBookingById
+  getBookingsCalendar
 );
 
 export default router;

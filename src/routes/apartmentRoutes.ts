@@ -15,7 +15,10 @@ import {
     deleteApartment,
     getImagesByApartment, 
     getApartmentPricing,
-    updateApartmentStatus
+    updateApartmentStatus,
+    upsertApartmentPricing,
+    deleteApartmentPricing
+
 } from '../controllers/apartmentController';
 
 import {
@@ -103,6 +106,24 @@ router.patch(
     validate(apartmentParamsSchema, 'params'),
     validate(updateApartmentCoverSchema, 'body'),
     updateApartmentCover
+);
+
+router.patch(
+    '/:id/pricing',
+    authenticate,
+    requireAdmin,
+    //validate(apartmentParamsSchema, 'params'),
+    //validate(updateApartmentCoverSchema, 'body'),
+    upsertApartmentPricing 
+);
+
+router.delete(
+    '/:id/pricing',
+    authenticate,
+    requireAdmin,
+    //validate(apartmentParamsSchema, 'params'),
+    //validate(updateApartmentCoverSchema, 'body'),
+    deleteApartmentPricing 
 );
 
 router.patch(
