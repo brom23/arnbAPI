@@ -9,10 +9,12 @@ import {
   getBookingsByApartmentId,
   updateBookingById,
   deleteBookingById,
-  updateBookingStatusById,
   getBlockedBookings,
-  getBookingsCalendar
+  getBookingsCalendar,  
+  cancelBooking,
+  confirmBooking,
 } from "../controllers/bookingController";
+import { cancelBookingService } from "../services/bookingService";
 
 const router = Router();
 
@@ -60,11 +62,18 @@ router.delete(
   deleteBookingById
 );
 
-router.patch(
-  "/:id/status",
+router.post(
+  "/:id/cancel",
   authenticate,
   requireAdmin,
-  updateBookingStatusById
+  cancelBooking
+);
+
+router.post(
+  "/:id/confirm",
+  authenticate,
+  requireAdmin,
+  confirmBooking
 );
 
 router.get(

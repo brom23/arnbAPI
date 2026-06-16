@@ -82,27 +82,23 @@ paths:
   /bookings:
     $ref: "./bookings.yaml#/paths/~1bookings"
 
-  /bookings/calendar:
-    $ref: "./bookings.yaml#/paths/~1bookings~1calendar"
+  /bookings/{id}:
+    $ref: "./bookings.yaml#/paths/~1bookings~1{id}"
 
   /bookings/{id}/cancel:
     $ref: "./bookings.yaml#/paths/~1bookings~1{id}~1cancel"
 
   /bookings/{id}/confirm:
     $ref: "./bookings.yaml#/paths/~1bookings~1{id}~1confirm"
-  
-  /bookings/{id}/status:
-    $ref: "./bookings.yaml#/paths/~1bookings~1{id}~1status"
-
-  /bookings/{id}:
-    $ref: "./bookings.yaml#/paths/~1bookings~1{id}"
 
   /bookings/apartment/{id}:
     $ref: "./bookings.yaml#/paths/~1bookings~1apartment~1{id}"
 
-
   /bookings/blocked:
     $ref: "./bookings.yaml#/paths/~1bookings~1blocked"
+
+  /bookings/calendar:
+    $ref: "./bookings.yaml#/paths/~1bookings~1calendar"
 
   # 🖼️ IMAGES
   /apartment-images:

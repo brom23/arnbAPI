@@ -367,68 +367,48 @@ export const getBookingsCalendarService = async (
   return data;
 };
 
-export const cancelBookingService = async (
-  supabase: SupabaseClient,
-  id: string
-) => {
-  const { data: booking, error } = await supabase
-    .from("bookings")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error || !booking) {
-    throw new AppError("Booking not found", 404);
-  }
-
-  if (booking.status === "cancelled") {
-    throw new AppError("Booking already cancelled", 400);
-  }
-
-  const { data, error: updateError } = await supabase
-    .from("bookings")
-    .update({ status: "cancelled" })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (updateError) throw updateError;
-
-  // opcjonalnie: zwolnienie dat (jeśli masz blocking table)
-  // await unblockDates(...)
-
-  return data;
-};
+type BookingStatus = "pending" | "confirmed" | "cancelled";
 
 export const confirmBookingService = async (
   supabase: SupabaseClient,
   id: string
 ) => {
-  const { data: booking, error } = await supabase
-    .from("bookings")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const booking = await fetchBookingById(supabase, id);
 
-  if (error || !booking) {
-    throw new AppError("Booking not found", 404);
+  if (booking.status === "cancelled") {
+    throw new AppError("Cannot confirm cancelled booking", 400);
   }
 
-  if (booking.status !== "pending") {
-    throw new AppError("Only pending bookings can be confirmed", 400);
-  }
-
-  const { data, error: updateError } = await supabase
+  const { data, error } = await supabase
     .from("bookings")
     .update({ status: "confirmed" })
     .eq("id", id)
     .select()
     .single();
 
-  if (updateError) throw updateError;
+  if (error) throw error;
 
-  // 🔥 ważne: blokowanie dat
-  // await blockDates(booking.apartment_id, booking.check_in, booking.check_out)
+  return data;
+};
+
+export const cancelBookingService = async (
+  supabase: SupabaseClient,
+  id: string
+) => {
+  const booking = await fetchBookingById(supabase, id);
+
+  if (booking.status === "cancelled") {
+    throw new AppError("Booking already cancelled", 400);
+  }
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .update({ status: "cancelled" })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
 
   return data;
 };

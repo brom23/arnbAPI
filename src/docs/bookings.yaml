@@ -307,31 +307,6 @@ paths:
         403:
           description: Forbidden
 
-    patch:
-      tags:
-        - bookings
-      summary: Update booking (ADMIN ONLY)
-      security:
-        - cookieAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateBooking"
-      responses:
-        200:
-          description: Booking updated
-        404:
-          description: Booking not found
-
     delete:
       tags:
         - bookings
@@ -355,13 +330,9 @@ paths:
     post:
       tags:
         - bookings
-      summary: Cancel booking
-      description: |
-        Cancels a booking.
-        Business rules:
-        - Only allowed for pending/confirmed bookings
-        - Cannot cancel already cancelled booking
-
+      summary: Cancel booking (admin)
+      description: Cancels a booking. Only admin can perform this action.
+      cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -383,39 +354,43 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                example:
-                  message: "Booking cannot be cancelled in current status"
+                $ref: "#/components/schemas/ErrorResponse"
+
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        403:
+          description: Forbidden (admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
         404:
           description: Booking not found
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                example:
-                  message: "Booking not found"
+                $ref: "#/components/schemas/ErrorResponse"
 
         500:
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
 
   /bookings/{id}/confirm:
     post:
       tags:
         - bookings
-      summary: Confirm booking
-      description: |
-        Confirms a booking.
-        Business rules:
-        - Only pending bookings can be confirmed
-        - Confirms reservation and locks dates
-
+      summary: Confirm booking (admin)
+      description: Confirms a booking. Only admin can perform this action.
+      cookieAuth: []
       parameters:
         - name: id
           in: path
@@ -437,62 +412,35 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                example:
-                  message: "Booking cannot be confirmed in current status"
+                $ref: "#/components/schemas/ErrorResponse"
+
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        403:
+          description: Forbidden (admin only)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
         404:
           description: Booking not found
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                example:
-                  message: "Booking not found"
+                $ref: "#/components/schemas/ErrorResponse"
 
         500:
           description: Internal server error
-
-  /bookings/{id}/status:
-    patch:
-      tags:
-        - bookings
-      summary: Update booking status (ADMIN ONLY)
-      security:
-        - cookieAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - status
-              properties:
-                status:
-                  type: string
-                  enum: [pending, confirmed, cancelled, completed]
-      responses:
-        200:
-          description: Status updated
-        400:
-          description: Invalid status
-        404:
-          description: Booking not found
-
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
 
   /bookings/apartment/{id}:
     get:

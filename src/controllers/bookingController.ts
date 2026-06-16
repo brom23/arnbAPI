@@ -6,7 +6,6 @@ import {
   insertBooking,
   checkApartmentAvailability,
   updateBooking,
-  updateBookingStatus,
   deleteBooking,
   fetchBookingsByApartmentId,
   //fetchBookingsPaginated,
@@ -14,7 +13,7 @@ import {
   fetchBookings,
   getBookingsCalendarService,
   confirmBookingService,
-  cancelBookingService
+  cancelBookingService,
 } from "../services/bookingService";
 
 import { AppError } from "../utils/AppError";
@@ -171,42 +170,6 @@ export const deleteBookingById = asyncHandler(
   }
 );
 
-export const updateBookingStatusById = asyncHandler(
-  async (req: Request, res: Response) => {
-
-    const { id } = req.params;
-    const { status } = req.body;
-
-    const allowedStatuses = [
-      "pending",
-      "confirmed",
-      "cancelled",
-      "completed"
-    ];
-
-    if (!status) {
-      throw new AppError("status is required", 400);
-    }
-
-    if (!allowedStatuses.includes(status)) {
-      throw new AppError("Invalid status value", 400);
-    }
-
-    const booking = await fetchBookingById(req.supabase!,id as string);
-
-    if (!booking) {
-      throw new AppError("Booking not found", 404);
-    }
-
-    const updated = await updateBookingStatus(req.supabase!,
-      id as string,
-      status
-    );
-
-    return res.status(200).json(updated);
-  }
-);
-
 export const getBookingsByApartmentId = asyncHandler(
   async (req: Request, res: Response) => {
 
@@ -267,18 +230,22 @@ export const getBookingsCalendar = asyncHandler(
   }
 );
 
-export const cancelBookingController = asyncHandler(async (req: Request, res: Response) => {
+export const cancelBooking = asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id;
+
+  if (!id) throw new AppError("Booking id is required", 400);
 
   const result = await cancelBookingService(req.supabase!, id as string);
 
-  return res.json(result);
+  return res.status(200).json(result);
 });
 
-export const confirmBookingController = asyncHandler(async (req: Request, res: Response) => {
+export const confirmBooking = asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id;
+
+  if (!id) throw new AppError("Booking id is required", 400);
 
   const result = await confirmBookingService(req.supabase!, id as string);
 
-  return res.json(result);
+  return res.status(200).json(result);
 });
