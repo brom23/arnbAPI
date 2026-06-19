@@ -37,7 +37,6 @@ export const fetchApartmentById = async (
 
 export const insertApartment = async (supabase: SupabaseClient, payload: any) => {
 
-
     const { data, error } = await supabase
         .from('apartments')
         .insert([
@@ -52,7 +51,7 @@ export const insertApartment = async (supabase: SupabaseClient, payload: any) =>
             }
         ])
         .select();
-
+    
     if (error) throw error;
 
     return data;
@@ -76,22 +75,27 @@ export const fetchApartmentBookings = async (supabase: SupabaseClient,
   return data;
 };
 
-export const updateApartmentById = async (supabase: SupabaseClient,
-    id: string,
-    payload: any
+export const updateApartmentById = async (
+  supabase: SupabaseClient,
+  id: string,
+  payload: any
 ) => {
+  const { data, error } = await supabase
+    .from("apartments")
+    .update({
+      ...payload,
+    })
+    .eq("id", id)
+    .select()
+    .single();
 
-    const { data, error } = await supabase
-        .from('apartments')
-        .update({
-            ...payload
-        })
-        .eq('id', id)
-        .select();
+  if (error) throw error;
 
-    if (error) throw error;
+  if (!data) {
+    throw new AppError("Resource not found", 404);
+  }
 
-    return data;
+  return data;
 };
 
 export const deleteApartmentById = async (supabase: SupabaseClient,
@@ -390,7 +394,7 @@ export async function fetchApartmentPricingById(
   const apartment = await fetchApartmentById(apartmentId);
 
   if (!apartment) {
-    throw new AppError("Apartment not found", 404);
+    throw new AppError("Resource not found", 404);
   }
 
   let query = supabaseAnon
@@ -451,7 +455,7 @@ export const updateApartmentStatus = async (
   if (error) throw error;
 
   if (!data) {
-    throw new AppError("Apartment not found", 404);
+    throw new AppError("Resource not found", 404);
   }
 
   return data;

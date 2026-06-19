@@ -1,0 +1,63 @@
+ApartmentImage:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+
+    apartment_id:
+      type: string
+      format: uuid
+
+    image_url:
+      type: string
+      format: uri
+
+    created_at:
+      type: string
+      format: date-time
+
+    position:
+      type: integer
+      example: 0
+
+    is_cover:
+      type: boolean
+      example: false
+
+CreateApartmentImage:
+  type: object
+  required:
+    - apartment_id
+    - image_url
+  properties:
+    apartment_id:
+      type: string
+      format: uuid
+
+    image_url:
+      type: string
+      format: uri
+
+    position:
+      type: integer
+      minimum: 0
+      default: 0
+
+    is_cover:
+      type: boolean
+      default: false
+
+UpdateApartmentImage:
+  type: object
+  properties:
+    image_url:
+      type: string
+      format: uri
+
+    position:
+      type: integer
+      minimum: 0
+
+    is_cover:
+      type: boolean

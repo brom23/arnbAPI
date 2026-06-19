@@ -1,0 +1,43 @@
+#components/index.yaml
+# schemas:
+  # Apartment:
+  #   $ref: "./schemas/apartment.yaml#/Apartment"
+  # Booking:
+  #   $ref: "./schemas/booking.yaml#/Booking"
+  # ApartmentImage:
+  #   $ref: "./schemas/apartment-image.yaml#/ApartmentImage"
+
+#   ValidationError:
+#     $ref: "./schemas/common.yaml#/ValidationError"
+#   ErrorResponse:
+#     $ref: "./schemas/common.yaml#/ErrorResponse"
+#   ForbiddenError:
+#     $ref: "./schemas/common.yaml#/ForbiddenError"
+#   NotFoundError:
+#     $ref: "./schemas/common.yaml#/NotFoundError"
+#   InternalServerError:
+#     $ref: "./schemas/common.yaml#/InternalServerError"
+
+# parameters:
+  # id:
+  #   $ref: "./parameters/common.yaml#/id"
+  # DateRange:
+  #   $ref: "./parameters/date-range.yaml#/DateRange"
+
+# responses:
+#   BadRequest:
+#     $ref: "./responses/common.yaml#/BadRequest"
+#   ValidationError:
+#     $ref: "./responses/common.yaml#/BadRequest"
+#   Unauthorized:
+#     $ref: "./responses/common.yaml#/Unauthorized"
+#   Forbidden:
+#     $ref: "./responses/common.yaml#/Forbidden"
+#   NotFound:
+#     $ref: "./responses/common.yaml#/NotFound"
+#   InternalServerError:
+#     $ref: "./responses/common.yaml#/InternalServerError"
+
+securitySchemes:
+  cookieAuth:
+    $ref: "./security/cookieAuth.yaml"

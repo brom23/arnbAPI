@@ -1,0 +1,51 @@
+ValidationError:
+  description: Validation error
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/common.yaml#/ValidationError"
+
+BadRequest:
+  description: Bad Request
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/common.yaml#/ErrorResponse"
+      example:
+        message: id is required
+
+Unauthorized:
+  description: Unauthorized
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/common.yaml#/ErrorResponse"
+      example:
+        message: Unauthorized
+
+Forbidden:
+  description: Forbidden (admin only)
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/common.yaml#/ErrorResponse"
+      example:
+        message: Forbidden (admin only)
+
+NotFound:
+  description: Not found
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/common.yaml#/ErrorResponse"
+      example:
+        message: Resource not found.
+
+InternalServerError:
+  description: Internal server error
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/common.yaml#/ErrorResponse"
+      example:
+        message: Internal server error

@@ -38,6 +38,8 @@ paths:
                   title_en: "Premium Loft"
                   description_en: "Big"
                   amenities_en: "kitchen, wifi"
+        500:
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
     post:
       tags:
@@ -79,18 +81,16 @@ paths:
                 $ref: "#/components/schemas/Apartment"
 
         400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationErrorResponse"
+          $ref: "../components/responses/common.yaml#/ValidationError"
+
+        401:
+          $ref: "../components/responses/common.yaml#/Unauthorized"
+
+        403:
+          $ref: "../components/responses/common.yaml#/Forbidden"
 
         500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
   /apartments/search:
     get:
@@ -106,41 +106,10 @@ paths:
         - minimum stay is 1 night
 
       parameters:
-
-        - name: from
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-            example: 2026-07-01
-          description: Check-in date (YYYY-MM-DD)
-
-        - name: to
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-            example: 2026-07-05
-          description: Check-out date (YYYY-MM-DD)
-
-        - name: guests
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            example: 2
-          description: Number of guests
-
-        - name: city
-          in: query
-          required: false
-          schema:
-            type: string
-            example: Warsaw
-          description: City name
+        - $ref: "../components/parameters/common.yaml#/from"
+        - $ref: "../components/parameters/common.yaml#/to"
+        - $ref: "../components/parameters/common.yaml#/guests"
+        - $ref: "../components/parameters/common.yaml#/city"
 
       responses:
 
@@ -154,22 +123,10 @@ paths:
                   $ref: "#/components/schemas/Apartment"
 
         400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationErrorResponse"
+          $ref: "../components/responses/common.yaml#/ValidationError"
 
         500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Internal server error
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
   /apartments/available:
     post:
@@ -211,10 +168,10 @@ paths:
                   $ref: "#/components/schemas/AvailableApartment"
 
         400:
-          description: Validation error
+          $ref: "../components/responses/common.yaml#/ValidationError"
 
         500:
-          description: Internal server error
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
 
   /apartments/{id}:
@@ -223,26 +180,21 @@ paths:
         - apartments
       summary: Get apartment by ID
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: "../components/parameters/common.yaml#/id"
+
       responses:
         200:
           description: Apartment
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Apartment"
+                $ref: "../components/schemas/apartment.yaml#/Apartment"
 
         404:
-          description: Apartment not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/NotFound"
+
+        500:
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
     patch:
       tags:
@@ -250,21 +202,35 @@ paths:
       summary: Update apartment
       cookieAuth: []
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: "../components/parameters/common.yaml#/id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateApartment"
+              $ref: "../components/schemas/apartment.yaml#/Apartment"
       responses:
         200:
-          description: Updated
+          description: Apartment
+          content:
+            application/json:
+              schema:
+                $ref: "../components/schemas/apartment.yaml#/Apartment"
+
+        400:
+          $ref: "../components/responses/common.yaml#/ValidationError"
+
+        401:
+          $ref: "../components/responses/common.yaml#/Unauthorized"
+
+        403:
+          $ref: "../components/responses/common.yaml#/Forbidden"
+          
+        404:
+            $ref: "../components/responses/common.yaml#/NotFound"
+        
+        500:
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
     delete:
       tags:
@@ -272,15 +238,30 @@ paths:
       summary: Delete apartment
       cookieAuth: []
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: "../components/parameters/common.yaml#/id"
       responses:
         200:
-          description: Deleted
+          description: Apartment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Apartment deleted successfully
+
+        401:
+          $ref: "../components/responses/common.yaml#/Unauthorized"
+
+        403:
+          $ref: "../components/responses/common.yaml#/Forbidden"
+          
+        404:
+            $ref: "../components/responses/common.yaml#/NotFound"
+        
+        500:
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
 
   /apartments/{id}/cover:
@@ -310,25 +291,13 @@ paths:
           description: Updated
 
         400:
-          description: imageId is required
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/BadRequest"
 
         404:
-          description: Apartment not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/NotFound"
 
         500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
   /apartments/{id}/images:
     get:
@@ -336,19 +305,23 @@ paths:
         - apartments
       summary: Get apartment images
       parameters:
-        - name: id
-          in: path
-          required: true
+        - $ref: "../components/parameters/common.yaml#/id"
+
       responses:
         200:
-          description: OK
-
-        404:
-          description: No images found
+          description: List of apartment images
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                type: array
+                items:
+                  $ref: "../components/schemas/apartment-image.yaml#/ApartmentImage"
+
+        404:
+          $ref: "../components/responses/common.yaml#/NotFound"
+
+        500:
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
   /apartments/{id}/pricing:
     get:
@@ -365,28 +338,9 @@ paths:
         - no data → 404 error
 
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-
-        - name: from
-          in: query
-          required: false
-          schema:
-            type: string
-            pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-            example: "2026-05-01"
-
-        - name: to
-          in: query
-          required: false
-          schema:
-            type: string
-            pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-            example: "2026-05-10"
+        - $ref: "../components/parameters/common.yaml#/id"
+        - $ref: "../components/parameters/common.yaml#/from"
+        - $ref: "../components/parameters/common.yaml#/to"
 
       responses:
         200:
@@ -406,22 +360,13 @@ paths:
                   "2026-05-29": 101
 
         400:
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/BadRequest"
 
         404:
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/NotFound"
 
         500:
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
     patch:
       tags:
@@ -434,12 +379,7 @@ paths:
         Missing dates are inserted.
 
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - "../components/parameters/common.yaml#/id"
 
       requestBody:
         required: true
@@ -469,25 +409,14 @@ paths:
                   $ref: "#/components/schemas/ApartmentPricing"
 
         400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/BadRequest"
 
         404:
-          description: Apartment not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/NotFound"
 
         500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/InternalServerError"
+
     delete:
       tags:
         - apartments
@@ -501,28 +430,9 @@ paths:
         - if from + to → deletes range inclusive
 
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-
-        - name: from
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-            example: "2026-12-01"
-
-        - name: to
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-            example: "2026-12-31"
+        - $ref: "../components/parameters/common.yaml#/id"
+        - $ref: "../components/parameters/common.yaml#/from"
+        - $ref: "../components/parameters/common.yaml#/to"
 
     responses:
       200:
@@ -537,16 +447,10 @@ paths:
                   example: "Pricing deleted successfully"
 
       400:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
+        $ref: "../components/responses/common.yaml#/BadRequest"
 
       500:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InternalServerError"
+        $ref: "../components/responses/common.yaml#/InternalServerError"
 
   /apartments/{id}/status:
     patch:
@@ -556,12 +460,7 @@ paths:
       description: Updates apartment status.
 
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: "../components/parameters/common.yaml#/id"
 
       requestBody:
         required: true
@@ -588,31 +487,13 @@ paths:
                 $ref: "#/components/schemas/Apartment"
 
         400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              example:
-                message: status is required
+          $ref: "../components/responses/common.yaml#/BadRequest"
 
         404:
-          description: Apartment not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              example:
-                message: Apartment not found
+          $ref: "../components/responses/common.yaml#/NotFound"
 
         500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              example:
-                message: Internal server error
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
   /apartments/{id}/bookings/unavailable-dates:
     get:
@@ -620,13 +501,10 @@ paths:
         - apartments
       summary: Get unavailable dates
       parameters:
-        - name: id
-          in: path
-          required: true
+        - $ref: "../components/parameters/common.yaml#/id"
       responses:
         200:
           description: OK
-
 
   /apartment-images:
     get:
@@ -815,33 +693,6 @@ components:
         message:
           type: string
           example: Apartment not found
-
-    ValidationErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Validation error
-
-        errors:
-          type: array
-          items:
-            type: object
-            properties:
-              field:
-                type: string
-                example: from
-
-              message:
-                type: string
-                example: Invalid ISO date format (YYYY-MM-DD)
-
-    InternalServerError:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Internal server error
 
     ApartmentPriceUpdate:
       type: object

@@ -35,7 +35,7 @@ export const getImages = asyncHandler(
     const images = await fetchApartmentImages();
 
     if (!images || images.length === 0) {
-      throw new AppError("Image not found", 404);
+      throw new AppError("Resource not found", 404);
     }
 
     return res.json(images);
@@ -78,7 +78,7 @@ export const updateApartmentImage = asyncHandler(
 
     if (!existingImage) {
       throw new AppError(
-        "Image not found",
+        "Resource not found",
         404
       );
     }
@@ -102,7 +102,7 @@ export const removeApartmentImage = asyncHandler(
     const { id } = req.params;
 
     if (!id) {
-      throw new AppError("Image id is required", 400);
+      throw new AppError("id is required", 400);
     }
 
     await deleteApartmentImage(id as string);

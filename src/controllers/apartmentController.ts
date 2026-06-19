@@ -110,16 +110,16 @@ export const createApartment = asyncHandler(
 
 export const updateApartment = asyncHandler(
   async (req: Request, res: Response) => {
-
     const { id } = req.params;
 
     const result = apartmentSchema.partial().safeParse(req.body);
 
     if (!result.success) {
-      throw result.error;
+      throw new AppError("Validation error", 400, result.error);
     }
 
-    const updated = await updateApartmentById(req.supabase!,
+    const updated = await updateApartmentById(
+      req.supabase!,
       id as string,
       result.data
     );
@@ -167,10 +167,10 @@ export const updateApartmentCover = asyncHandler(
 export const getImagesByApartment = asyncHandler(
   async (req: Request, res: Response) => {
 
-    const { apartmentId } = req.params;
+    const { id } = req.params;
 
     const images = await fetchImagesByApartmentId(
-      apartmentId as string
+      id as string
     );
 
     if (!images || images.length === 0) {

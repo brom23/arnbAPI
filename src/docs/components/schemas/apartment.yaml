@@ -1,0 +1,177 @@
+    Apartment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+
+        title:
+          type: string
+
+        slug:
+          type: string
+          nullable: true
+
+        description:
+          type: string
+
+        price_per_night:
+          type: number
+
+        guests:
+          type: integer
+
+        city:
+          type: string
+
+        image:
+          type: string
+          nullable: true
+
+        created_at:
+          type: string
+          format: date-time
+
+        base_price:
+          type: number
+          nullable: true
+
+        max_rooms:
+          type: integer
+          nullable: true
+
+        cancellation_type:
+          type: string
+          nullable: true
+
+        apartment_number:
+          type: string
+          nullable: true
+
+        floor:
+          type: string
+          nullable: true
+
+        staircase:
+          type: string
+          nullable: true
+
+        has_balcony:
+          type: boolean
+          nullable: true
+
+        amenities:
+          type: string
+          nullable: true
+
+        beds:
+          type: integer
+          nullable: true
+
+        min_guests:
+          type: integer
+          nullable: true
+
+        title_en:
+          type: string
+          nullable: true
+
+        description_en:
+          type: string
+          nullable: true
+
+        amenities_en:
+          type: string
+          nullable: true
+
+        bathrooms:
+          type: integer
+          nullable: true
+
+        size:
+          type: number
+          nullable: true
+
+        status:
+          type: string
+          nullable: true
+
+    CreateApartment:
+      type: object
+      required:
+        - title
+        - description
+        - price_per_night
+        - guests
+        - city
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        price_per_night:
+          type: number
+        guests:
+          type: integer
+        city:
+          type: string
+
+    UpdateApartment:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        price_per_night:
+          type: number
+        guests:
+          type: integer
+        city:
+          type: string
+
+    ApartmentBooking:
+      type: object
+      properties:
+        check_in:
+          type: string
+          format: date
+        check_out:
+          type: string
+          format: date
+
+    AvailableApartment:
+      allOf:
+        - $ref: "#/components/schemas/Apartment"
+        - type: object
+          properties:
+            bookings:
+              type: array
+              items:
+                $ref: "#/components/schemas/ApartmentBooking"
+
+    ApartmentPriceUpdate:
+      type: object
+      required:
+        - date
+        - price
+      properties:
+        date:
+          type: string
+          format: date
+          example: "2026-12-24"
+        price:
+          type: number
+          example: 1200
+
+    ApartmentPricing:
+      type: object
+      properties:
+        apartment_id:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date
+        price:
+          type: number

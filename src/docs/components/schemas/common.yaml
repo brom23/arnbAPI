@@ -1,0 +1,21 @@
+ErrorResponse:
+  type: object
+  properties:
+    message:
+      type: string
+      
+ValidationError:
+  type: object
+  properties:
+    message:
+      type: string
+    errors:
+      type: array
+      items:
+        type: object
+
+SuccessResponse:
+  type: object
+  properties:
+    message:
+      type: string

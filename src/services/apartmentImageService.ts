@@ -1,6 +1,10 @@
 import { randomUUID } from 'crypto';
 import { supabaseAnon,supabaseAdmin } from '../lib/supabase';
 import { removeFileFromStorage } from '../utils/storage';
+import { AppError } from '../utils/AppError';
+
+const URL_STORAGE =
+    `https://hhprezzotbbatuqjihry.supabase.co/storage/v1/object/public/apartment_images/`;
 
 export const insertApartmentImage = async (payload: any) => {
 
@@ -69,38 +73,50 @@ export const storeApartmentImage = async (
     throw new Error("Apartment ID is required");
   }
 
-  // 1. stabilna nazwa pliku (ważne dla URL)
   const fileName = file.originalname
     .toLowerCase()
     .replace(/\s/g, "-");
 
-  // 2. public path EXACT jak w Supabase URL
   const filePath = `${randomUUID()}-${fileName}`;
 
-  // 3. upload do bucketu
   const { error: uploadError } = await supabaseAdmin.storage
     .from("apartment_images")
     .upload(filePath, file.buffer, {
       contentType: file.mimetype,
-      upsert: false, // żeby nadpisywać ten sam plik (opcjonalnie)
+      upsert: false,
     });
 
   if (uploadError) {
-    throw new Error(uploadError.message);
+    throw uploadError;
   }
 
-  // 4. GENEROWANIE URL W TAKIM FORMATIE JAK CHCESZ
   const imageUrl =
     `https://hhprezzotbbatuqjihry.supabase.co/storage/v1/object/public/apartment_images/${filePath}`;
 
-  // 5. zapis do bazy
+  // Pobierz ostatnią pozycję
+  const { data: lastImage, error: positionError } = await supabaseAdmin
+    .from("apartment_images")
+    .select("position")
+    .eq("apartment_id", apartmentId)
+    .order("position", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (positionError) {
+    throw positionError;
+  }
+
+  const nextPosition = lastImage
+    ? lastImage.position + 1
+    : 0;
+
   const { data, error } = await supabaseAdmin
     .from("apartment_images")
     .insert([
       {
         apartment_id: apartmentId,
         image_url: imageUrl,
-        position: 0,
+        position: nextPosition,
         is_cover: false,
       },
     ])
@@ -108,7 +124,7 @@ export const storeApartmentImage = async (
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return data;
@@ -146,16 +162,25 @@ export const deleteApartmentImage = async (
     .single();
 
   if (fetchError || !image) {
-    throw new Error("Image not found");
+    throw new AppError("Resource not found", 404);
   }
 
-  // 2. Usuń plik ze storage
-  await removeFileFromStorage(
-    "apartments",
-    image.url
-  );
+  // 2. Usuń plik ze storage tylko jeśli jest w bucketcie apartments
+  const isStorageFile =
+    image.url?.includes(URL_STORAGE)
 
-  // 3. Usuń rekord z DB
+  // 3. Usuń plik ze storage
+  if (isStorageFile) {
+    await removeFileFromStorage("apartments", image.url);
+  }
+
+  
+  // await removeFileFromStorage(
+  //   "apartments",
+  //   image.url
+  // );
+
+  // 4. Usuń rekord z DB
   const { error: deleteError } = await supabaseAdmin
     .from("apartment_images")
     .delete()

@@ -1,0 +1,13 @@
+type: apiKey
+in: cookie
+name: access_token
+description: |
+  Authentication via HttpOnly cookies.
+
+  Required cookies:
+  - access_token (short-lived JWT)
+  - refresh_token (used for /auth/refresh rotation)
+
+  Notes:
+  - Cookies are automatically attached by browser
+  - No Authorization header is used
