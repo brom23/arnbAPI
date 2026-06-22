@@ -32,7 +32,7 @@ export const getApartmentById = asyncHandler(
     const apartment = await fetchApartmentById(id as string);
 
     if (!apartment) {
-      throw new AppError("Apartment not found", 404);
+      throw new AppError("Resource not found", 404);
     }
 
     return res.json(apartment);
@@ -136,7 +136,7 @@ export const deleteApartment = asyncHandler(
     const apartment = await deleteApartmentById(req.supabase!, id as string);
 
     if (!apartment || apartment.length === 0) {
-      throw new AppError("Apartment not found", 404);
+      throw new AppError("Resource not found", 404);
     }
 
     return res.json({
