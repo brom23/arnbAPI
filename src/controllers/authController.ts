@@ -52,6 +52,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { loginAdmin } from "../services/authService";
 import { AppError } from "../utils/AppError";
 import { log } from "../utils/logger";
+import { error } from "console";
 
 export const loginController = asyncHandler(
   async (req: Request, res: Response) => {
@@ -76,10 +77,7 @@ export const loginController = asyncHandler(
     const expiresAt = new Date(payload.exp * 1000).toISOString();
 
     if (!session?.access_token) {
-      throw new AppError(
-        "Invalid login response from auth provider",
-        500
-      );
+      throw new Error("Invalid login response from auth provider");
     }
 
     log.info(`✅ LOGIN SUCCESS ${session.user.id}`);

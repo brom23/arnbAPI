@@ -37,11 +37,14 @@ paths:
                 $ref: "../components/schemas/auth.yaml#/AuthUser"
 
         400:
-          description: Validation error
+          description: Email and password are required
           content:
             application/json:
               schema:
-                $ref: "../components/schemas/common.yaml#/ValidationError"
+                $ref: "../components/schemas/common.yaml#/ErrorResponse"
+              example:
+                message: Email and password are required
+
 
         401:
           description: Invalid email or password
@@ -49,6 +52,11 @@ paths:
             application/json:
               schema:
                 $ref: "../components/schemas/common.yaml#/ErrorResponse"
+              example:
+                message: Invalid email or password
+
+        500: 
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
   /auth/refresh:
     post:
@@ -90,6 +98,8 @@ paths:
             application/json:
               schema:
                 $ref: "../components/schemas/common.yaml#/ErrorResponse"
+              example:
+                message: "Refresh token missing"
 
   /auth/logout:
     post:
