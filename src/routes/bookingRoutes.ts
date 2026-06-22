@@ -42,6 +42,13 @@ router.get(
 );
 
 router.get(
+  "/calendar",
+  authenticate,
+  requireAdmin,
+  getBookingsCalendar
+);
+
+router.get(
   "/:id",
   authenticate,
   requireAdmin,
@@ -74,12 +81,6 @@ router.post(
   authenticate,
   requireAdmin,
   confirmBooking
-);
-
-router.get(
-  "/calendar",
-  authenticate,
-  getBookingsCalendar
 );
 
 export default router;

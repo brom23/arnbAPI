@@ -6,88 +6,12 @@ paths:
         - bookings
       summary: Create new booking
       description: Public endpoint. Creates booking with default "pending" status.
-
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - apartment_id
-                - check_in
-                - check_out
-                - guests
-                - email
-                - total_price
-                - first_name
-                - last_name
-                - phone
-                - city
-                - zip
-                - street
-                - country
-
-              properties:
-                apartment_id:
-                  type: string
-                  format: uuid
-                  example: "836a7a1e-e435-45a1-b9f0-acc10381a83b"
-
-                check_in:
-                  type: string
-                  format: date
-                  example: "2026-06-14"
-
-                check_out:
-                  type: string
-                  format: date
-                  example: "2026-06-17"
-
-                guests:
-                  type: integer
-                  example: 2
-
-                email:
-                  type: string
-                  format: email
-                  example: "test@email.com"
-
-                total_price:
-                  type: number
-                  example: 600
-
-                first_name:
-                  type: string
-                  example: "Jan"
-
-                last_name:
-                  type: string
-                  example: "Kowalski"
-
-                phone:
-                  type: string
-                  example: "500600700"
-
-                city:
-                  type: string
-                  example: "Warszawa"
-
-                zip:
-                  type: string
-                  example: "00-001"
-
-                street:
-                  type: string
-                  example: "Marszałkowska 10"
-
-                country:
-                  type: string
-                  example: "Polska"
-
-                notes:
-                  type: string
-                  example: "Late check-in"
+              required: true
+              content:
+                application/json:
+                  schema:
+                    $ref: "../components/schemas/booking.yaml#/CreateBooking"
 
       responses:
         201:
@@ -95,13 +19,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Booking"
+                $ref: "../components/schemas/booking.yaml#/Booking"
 
         400:
-          description: Validation error
+          $ref: "../components/responses/common.yaml#/ValidationError"
 
         409:
-          description: Apartment not available
+          description: Apartment not available          
+          content:
+            application/json:
+              schema:
+                $ref: "../components/schemas/common.yaml#/ErrorResponse"
+              example:
+                message: Apartment is not available for selected dates     
+        500:
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
     get:
       tags:
@@ -113,35 +45,11 @@ paths:
         Returns all bookings.
         Filters are optional (status, apartment_id, email, date range).
       parameters:
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [pending, confirmed, cancelled, completed]
-
-        - name: apartment_id
-          in: query
-          schema:
-            type: string
-            format: uuid
-
-        - name: email
-          in: query
-          schema:
-            type: string
-            format: email
-
-        - name: fromDate
-          in: query
-          schema:
-            type: string
-            format: date
-
-        - name: toDate
-          in: query
-          schema:
-            type: string
-            format: date
+        - $ref: "../components/parameters/common.yaml#/status"
+        - $ref: "../components/parameters/common.yaml#/apartment_id"
+        - $ref: "../components/parameters/common.yaml#/email"
+        - $ref: "../components/parameters/common.yaml#/fromDate"
+        - $ref: "../components/parameters/common.yaml#/toDate"
 
       responses:
         200:
@@ -151,12 +59,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Booking"
+                  $ref: "../components/schemas/booking.yaml#/Booking"
         401:
-          description: Unauthorized
+          $ref: "../components/responses/common.yaml#/Unauthorized"
         403:
-          description: Forbidden
-
+          $ref: "../components/responses/common.yaml#/Forbidden"
+        500:
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
   /bookings/blocked:
     post:
@@ -210,23 +119,8 @@ paths:
         - to must be greater than or equal to from
 
       parameters:
-        - name: from
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-            example: "2026-07-01"
-          description: Start date
-
-        - name: to
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-            example: "2026-07-31"
-          description: End date
+        - $ref: "../components/parameters/common.yaml#/from"
+        - $ref: "../components/parameters/common.yaml#/to"
 
       responses:
         200:
@@ -249,35 +143,13 @@ paths:
                   apartments:
                     title: "Apartament Nad Morzem"
                 items:
-                  $ref: "#/components/schemas/CalendarBooking"
+                  $ref: "../components/schemas/booking.yaml#/CalendarBooking"
               
-
         400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-
-                invalidFrom:
-                  value:
-                    message: "Invalid ISO date format (YYYY-MM-DD)"
-
-                invalidTo:
-                  value:
-                    message: "Invalid ISO date format (YYYY-MM-DD)"
-
-                invalidRange:
-                  value:
-                    message: "'to' must be greater than or equal to 'from'"
+          $ref: "../components/responses/common.yaml#/ValidationError"
 
         500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
   /bookings/{id}:
     get:
@@ -299,13 +171,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Booking"
-        404:
-          description: Booking not found
+                $ref: "../components/schemas/booking.yaml#/Booking"
         401:
-          description: Unauthorized
+          $ref: "../components/responses/common.yaml#/Unauthorized"
+
         403:
-          description: Forbidden
+          $ref: "../components/responses/common.yaml#/Forbidden"
+          
+        404:
+            $ref: "../components/responses/common.yaml#/NotFound"
+          
+        500:
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
     delete:
       tags:
@@ -314,17 +191,13 @@ paths:
       security:
         - cookieAuth: []
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: "../components/parameters/common.yaml#/id"
+
       responses:
         200:
           description: Booking deleted
         404:
-          description: Booking not found
+          $ref: "../components/responses/common.yaml#/NotFound"
 
   /bookings/{id}/cancel:
     post:
@@ -334,12 +207,7 @@ paths:
       description: Cancels a booking. Only admin can perform this action.
       cookieAuth: []
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        $ref: "../components/parameters/common.yaml#/id"
 
       responses:
         200:
@@ -347,42 +215,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Booking"
+                $ref: "../components/schemas/booking.yaml#/Booking"
 
         400:
           description: Invalid state transition
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "../components/responses/common.yaml#/ValidationError"
 
         401:
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/Unauthorized"
 
         403:
-          description: Forbidden (admin only)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
+          $ref: "../components/responses/common.yaml#/Forbidden"
+          
         404:
-          description: Booking not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
+            $ref: "../components/responses/common.yaml#/NotFound"
+          
         500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
   /bookings/{id}/confirm:
     post:
@@ -392,12 +244,7 @@ paths:
       description: Confirms a booking. Only admin can perform this action.
       cookieAuth: []
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        $ref: "../components/parameters/common.yaml#/id"
 
       responses:
         200:
@@ -405,42 +252,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Booking"
+                $ref: "../components/schemas/booking.yaml#/Booking"
 
         400:
           description: Invalid state transition
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "../components/schemas/common.yaml#/ErrorResponse"
 
         401:
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+          $ref: "../components/responses/common.yaml#/Unauthorized"
 
         403:
-          description: Forbidden (admin only)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
+          $ref: "../components/responses/common.yaml#/Forbidden"
+          
         404:
-          description: Booking not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
+            $ref: "../components/responses/common.yaml#/NotFound"
+          
         500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
+          $ref: "../components/responses/common.yaml#/InternalServerError"
 
   /bookings/apartment/{id}:
     get:
@@ -464,226 +295,4 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Booking"
-
-components:
-
-  securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: access_token
-
-  schemas:
-
-    CreateBooking:
-      type: object
-      required:
-        - apartment_id
-        - check_in
-        - check_out
-        - guests
-        - email
-        - total_price
-        - first_name
-        - last_name
-        - phone
-        - city
-        - zip
-        - street
-        - country
-      properties:
-        apartment_id:
-          type: string
-          format: uuid
-        check_in:
-          type: string
-          format: date
-        check_out:
-          type: string
-          format: date
-        guests:
-          type: integer
-        email:
-          type: string
-          format: email
-        total_price:
-          type: number
-        first_name:
-          type: string
-        last_name:
-          type: string
-        phone:
-          type: string
-        city:
-          type: string
-        zip:
-          type: string
-        street:
-          type: string
-        country:
-          type: string
-        notes:
-          type: string
-
-    Booking:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        apartment_id:
-          type: string
-          format: uuid
-        check_in:
-          type: string
-          format: date
-        check_out:
-          type: string
-          format: date
-        guests:
-          type: integer
-        email:
-          type: string
-          format: email
-
-        status:
-          type: string
-          enum: [pending, confirmed, cancelled, completed]
-
-        total_price:
-          type: number
-
-        first_name:
-          type: string
-        last_name:
-          type: string
-        phone:
-          type: string
-
-        city:
-          type: string
-        zip:
-          type: string
-        street:
-          type: string
-        country:
-          type: string
-
-        notes:
-          type: string
-
-        hold_expires_at:
-          type: string
-          format: date-time
-          nullable: true
-
-        created_at:
-          type: string
-          format: date-time
-
-    UpdateBooking:
-      type: object
-      description: Partial update of booking (admin only)
-      properties:
-        apartment_id:
-          type: string
-          format: uuid
-        check_in:
-          type: string
-          format: date
-        check_out:
-          type: string
-          format: date
-        guests:
-          type: integer
-        email:
-          type: string
-          format: email
-        total_price:
-          type: number
-        first_name:
-          type: string
-        last_name:
-          type: string
-        phone:
-          type: string
-        city:
-          type: string
-        zip:
-          type: string
-        street:
-          type: string
-        country:
-          type: string
-        notes:
-          type: string
-
-    CalendarBooking:
-      type: object
-      properties:
-
-        id:
-          type: string
-          format: uuid
-
-        apartment_id:
-          type: string
-          format: uuid
-
-        check_in:
-          type: string
-          format: date
-
-        check_out:
-          type: string
-          format: date
-
-        email:
-          type: string
-          example: "john@example.com"
-
-        status:
-          type: string
-          example: "confirmed"
-
-        guests:
-          type: integer
-          example: 2
-
-        total_price:
-          type: number
-          example: 1200
-
-        first_name:
-          type: string
-          example: "John"
-
-        last_name:
-          type: string
-          example: "Smith"
-
-        apartments:
-          type: object
-          properties:
-            title:
-              type: string
-              example: "Apartament Nad Morzem"
-
-    ErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-
-        errors:
-          type: array
-          items:
-            type: object
-
-    InternalServerError:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Internal server error
+                  $ref: "../components/schemas/booking.yaml#/Booking"

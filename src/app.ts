@@ -16,8 +16,6 @@ import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
 
-app.use(errorHandler);
-
 app.use(requestLogger);
 
 app.use(cookieParser());
@@ -116,5 +114,6 @@ app.get("/", (_, res) => {
   });
 });
 
+app.use(errorHandler);
 
 export default app;

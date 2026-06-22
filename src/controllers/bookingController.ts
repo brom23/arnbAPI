@@ -23,14 +23,15 @@ import { asyncHandler } from "../utils/asyncHandler";
 export const getBookings = asyncHandler(
   async (req: Request, res: Response) => {
 
-    const result = await fetchBookings(req.supabase!,
-      {
-      status: req.query.status as string,
-      apartment_id: req.query.apartment_id as string,
-      email: req.query.email as string,
-      fromDate: req.query.fromDate as string,
-      toDate: req.query.toDate as string
-    });
+    const params = {
+    status: typeof req.query.status === "string" ? req.query.status : undefined,
+    apartment_id: typeof req.query.apartment_id === "string" ? req.query.apartment_id : undefined,
+    email: typeof req.query.email === "string" ? req.query.email : undefined,
+    fromDate: typeof req.query.fromDate === "string" ? req.query.fromDate : undefined,
+    toDate: typeof req.query.toDate === "string" ? req.query.toDate : undefined,
+  };
+
+    const result = await fetchBookings(req.supabase!, params);
 
     return res.json(result);
   }
@@ -44,7 +45,7 @@ export const getBookingById = asyncHandler(
     const booking = await fetchBookingById(req.supabase!,id as string);
 
     if (!booking) {
-      throw new AppError("Booking not found", 404);
+      throw new AppError("Resource not found", 404);
     }
 
     return res.json(booking);
@@ -94,7 +95,7 @@ export const updateBookingById = asyncHandler(
     const existingBooking = await fetchBookingById(req.supabase!,id as string);
 
     if (!existingBooking) {
-      throw new AppError("Booking not found", 404);
+      throw new AppError("Resource not found", 404);
     }
 
     const checkIn =

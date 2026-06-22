@@ -53,11 +53,11 @@ export const fetchBookingById= async (supabase: SupabaseClient,id: string) => {
         .from('bookings')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
     if (error) throw error;
 
-    return data;
+    return data ?? [];
 };
 
 import type { CreateBookingDto } from "../validators/bookingValidator";

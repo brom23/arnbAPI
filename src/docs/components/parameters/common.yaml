@@ -44,3 +44,37 @@ city:
     type: string
     example: Warsaw
   description: City name
+
+status:    
+    name: status
+    in: query
+    schema:
+      type: string
+      enum: [pending, confirmed, cancelled, completed]
+
+apartment_id:
+    name: apartment_id
+    in: query
+    schema:
+      type: string
+      format: uuid
+email:
+    name: email
+    in: query
+    schema:
+      type: string
+      format: email
+
+fromDate:
+    name: fromDate
+    in: query
+    schema:
+      type: string
+      format: date
+
+toDate:
+    name: toDate
+    in: query
+    schema:
+      type: string
+      format: date

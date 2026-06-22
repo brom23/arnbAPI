@@ -1,254 +1,231 @@
-    CreateBooking:
-      type: object
-      required:
-        - apartment_id
-        - check_in
-        - check_out
-        - guests
-        - email
-        - total_price
-        - first_name
-        - last_name
-        - phone
-        - city
-        - zip
-        - street
-        - country
-      properties:
-        apartment_id:
-          type: string
-          format: uuid
+CreateBooking:
+  type: object
+  required:
+    - apartment_id
+    - check_in
+    - check_out
+    - guests
+    - email
+    - total_price
+    - first_name
+    - last_name
+    - phone
+    - city
+    - zip
+    - street
+    - country
+  properties:
+    apartment_id:
+      type: string
+      format: uuid
 
-        check_in:
-          type: string
-          format: date
+    check_in:
+      type: string
+      format: date
 
-        check_out:
-          type: string
-          format: date
+    check_out:
+      type: string
+      format: date
 
-        guests:
-          type: integer
+    guests:
+      type: integer
 
-        email:
-          type: string
-          format: email
+    email:
+      type: string
+      format: email
 
-        total_price:
-          type: number
+    total_price:
+      type: number
 
-        first_name:
-          type: string
+    first_name:
+      type: string
 
-        last_name:
-          type: string
+    last_name:
+      type: string
 
-        phone:
-          type: string
+    phone:
+      type: string
 
-        city:
-          type: string
+    city:
+      type: string
 
-        zip:
-          type: string
+    zip:
+      type: string
 
-        street:
-          type: string
+    street:
+      type: string
 
-        country:
-          type: string
+    country:
+      type: string
 
-        notes:
-          type: string
-          nullable: true
+    notes:
+      type: string
+      nullable: true
 
+Booking:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
 
-    Booking:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
+    apartment_id:
+      type: string
+      format: uuid
 
-        apartment_id:
-          type: string
-          format: uuid
+    check_in:
+      type: string
+      format: date
 
-        check_in:
-          type: string
-          format: date
+    check_out:
+      type: string
+      format: date
 
-        check_out:
-          type: string
-          format: date
+    guests:
+      type: integer
 
-        guests:
-          type: integer
+    email:
+      type: string
+      format: email
 
-        email:
-          type: string
-          format: email
+    status:
+      type: string
+      enum: [pending, confirmed, cancelled, completed]
 
-        status:
-          type: string
-          enum: [pending, confirmed, cancelled, completed]
+    total_price:
+      type: number
 
-        total_price:
-          type: number
+    first_name:
+      type: string
 
-        first_name:
-          type: string
+    last_name:
+      type: string
 
-        last_name:
-          type: string
+    phone:
+      type: string
 
-        phone:
-          type: string
+    city:
+      type: string
 
-        city:
-          type: string
+    zip:
+      type: string
 
-        zip:
-          type: string
+    street:
+      type: string
 
-        street:
-          type: string
+    country:
+      type: string
 
-        country:
-          type: string
+    notes:
+      type: string
+      nullable: true
 
-        notes:
-          type: string
-          nullable: true
+    hold_expires_at:
+      type: string
+      format: date-time
+      nullable: true
 
-        hold_expires_at:
-          type: string
-          format: date-time
-          nullable: true
+    created_at:
+      type: string
+      format: date-time
 
-        created_at:
-          type: string
-          format: date-time
+UpdateBooking:
+  type: object
+  description: Partial update of booking (admin only)
+  properties:
+    apartment_id:
+      type: string
+      format: uuid
 
+    check_in:
+      type: string
+      format: date
 
-    UpdateBooking:
-      type: object
-      description: Partial update of booking (admin only)
-      properties:
-        apartment_id:
-          type: string
-          format: uuid
+    check_out:
+      type: string
+      format: date
 
-        check_in:
-          type: string
-          format: date
+    guests:
+      type: integer
 
-        check_out:
-          type: string
-          format: date
+    email:
+      type: string
+      format: email
 
-        guests:
-          type: integer
+    total_price:
+      type: number
 
-        email:
-          type: string
-          format: email
+    first_name:
+      type: string
 
-        total_price:
-          type: number
+    last_name:
+      type: string
 
-        first_name:
-          type: string
+    phone:
+      type: string
 
-        last_name:
-          type: string
+    city:
+      type: string
 
-        phone:
-          type: string
+    zip:
+      type: string
 
-        city:
-          type: string
+    street:
+      type: string
 
-        zip:
-          type: string
+    country:
+      type: string
 
-        street:
-          type: string
+    notes:
+      type: string
+      nullable: true
 
-        country:
-          type: string
+CalendarBooking:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
 
-        notes:
-          type: string
-          nullable: true
+    apartment_id:
+      type: string
+      format: uuid
 
+    check_in:
+      type: string
+      format: date
 
-    CalendarBooking:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
+    check_out:
+      type: string
+      format: date
 
-        apartment_id:
-          type: string
-          format: uuid
+    email:
+      type: string
+      example: john@example.com
 
-        check_in:
-          type: string
-          format: date
+    status:
+      type: string
+      example: confirmed
 
-        check_out:
-          type: string
-          format: date
+    guests:
+      type: integer
+      example: 2
 
-        email:
-          type: string
-          example: john@example.com
+    total_price:
+      type: number
+      example: 1200
 
-        status:
-          type: string
-          example: confirmed
+    first_name:
+      type: string
+      example: John
 
-        guests:
-          type: integer
-          example: 2
+    last_name:
+      type: string
+      example: Smith
 
-        total_price:
-          type: number
-          example: 1200
-
-        first_name:
-          type: string
-          example: John
-
-        last_name:
-          type: string
-          example: Smith
-
-        apartments:
-          type: object
-          properties:
-            title:
-              type: string
-              example: Apartament Nad Morzem
-
-
-    ErrorResponse:
+    apartments:
       type: object
       properties:
-        message:
+        title:
           type: string
-
-        errors:
-          type: array
-          items:
-            type: object
-
-
-    InternalServerError:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Internal server error
+          example: Apartament Nad Morzem
