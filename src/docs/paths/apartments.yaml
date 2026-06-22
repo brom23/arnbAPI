@@ -153,9 +153,6 @@ paths:
                 guests:
                   type: integer
                   nullable: true
-                city:
-                  type: string
-                  nullable: true
 
       responses:
         200:
@@ -167,12 +164,8 @@ paths:
                 items:
                   $ref: "../components/schemas/apartment.yaml#/AvailableApartment"
 
-        400:
-          $ref: "../components/responses/common.yaml#/ValidationError"
-
         500:
           $ref: "../components/responses/common.yaml#/InternalServerError"
-
 
   /apartments/{id}:
     get:

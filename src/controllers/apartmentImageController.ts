@@ -18,11 +18,6 @@ export const createApartmentImage = asyncHandler(
   async (req: Request, res: Response) => {
 
     const result = apartmentImageSchema.safeParse(req.body);
-
-    if (!result.success) {
-      throw result.error;
-    }
-
     const image = await insertApartmentImage(result.data);
 
     return res.status(201).json(image);

@@ -190,46 +190,34 @@ export const getApartments = asyncHandler(
   }
 );
 
-export const getAvailableApartments = async (
-  req: Request,
-  res: Response
-) => {
-  try {
+export const getAvailableApartments = asyncHandler(
+  async (req: Request, res: Response) => {
     const { from, to, guests } = req.body;
 
-    const apartments = await fetchApartmentsWithBookings()
-
-    if (!apartments) {
-      return res.json([])
-    }
+    const apartments = await fetchApartmentsWithBookings();
 
     const available = apartments.filter((a: any) => {
-      // 1. guests filter
-      if (guests && a.guests < guests) return false
+      if (guests && a.guests < guests) {
+        return false;
+      }
 
-      // 2. no bookings → available
-      if (!a.bookings?.length) return true
+      if (!a.bookings?.length) {
+        return true;
+      }
 
-      // 3. overlap check (AIRBNB RULE)
       const isBlocked = a.bookings.some((b: any) => {
         return (
           new Date(from) < new Date(b.check_out) &&
           new Date(to) > new Date(b.check_in)
-        )
-      })
+        );
+      });
 
-      return !isBlocked
-    })
+      return !isBlocked;
+    });
 
-    return res.json(available)
-  } catch (error: any) {
-    // console.error('❌ AVAILABILITY ERROR:', error.message)
-
-    return res.status(500).json({
-      message: 'Internal server error'
-    })
+    return res.json(available);
   }
-}
+);
 
 // GET /apartments/:id/pricing?from=YYYY-MM-DD&to=YYYY-MM-DD
 export const getApartmentPricing = asyncHandler(

@@ -41,7 +41,7 @@ export const fetchBookings = async (supabase: SupabaseClient,
   const { data, error } = await query;
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return data ?? [];
@@ -55,7 +55,9 @@ export const fetchBookingById= async (supabase: SupabaseClient,id: string) => {
         .eq('id', id)
         .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     return data ?? [];
 };
@@ -103,7 +105,7 @@ export const insertBooking = async (
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return data;
@@ -124,7 +126,9 @@ export const checkApartmentAvailability = async (
         .lt('check_in', checkOut)
         .gt('check_out', checkIn);
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     return data;
 };
@@ -200,7 +204,7 @@ export const updateBooking = async (
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return data;
@@ -216,7 +220,7 @@ export const deleteBooking = async (supabase: SupabaseClient,
     .eq("id", id);
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return true;
@@ -235,7 +239,7 @@ export const updateBookingStatus = async (supabase: SupabaseClient,
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return data;
@@ -252,7 +256,7 @@ export const fetchBookingsByApartmentId = async (supabase: SupabaseClient,
     .order("check_in", { ascending: true });
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return data;
@@ -330,7 +334,9 @@ export const fetchBlockedBookings = async (
     .select("check_in, check_out")
     .eq("apartment_id", apartmentId);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return data;
 };
@@ -362,7 +368,9 @@ export const getBookingsCalendarService = async (
     .gte("check_out", from)
     .order("check_in", { ascending: true });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return data;
 };
@@ -386,7 +394,9 @@ export const confirmBookingService = async (
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return data;
 };
@@ -408,7 +418,9 @@ export const cancelBookingService = async (
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return data;
 };

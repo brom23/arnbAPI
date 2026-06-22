@@ -49,13 +49,7 @@ export const fetchApartmentImageById = async (
     .single();
 
   if (error) {
-
-    console.error(
-      "❌ FETCH APARTMENT IMAGE BY ID ERROR:",
-      error.message
-    );
-
-    return null;
+    throw error;
   }
 
   return data;
@@ -187,7 +181,7 @@ export const deleteApartmentImage = async (
     .eq("id", id);
 
   if (deleteError) {
-    throw new Error(deleteError.message);
+    throw deleteError;
   }
 
   return true;

@@ -52,7 +52,9 @@ export const insertApartment = async (supabase: SupabaseClient, payload: any) =>
         ])
         .select();
     
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     return data;
 };
@@ -69,7 +71,7 @@ export const fetchApartmentBookings = async (supabase: SupabaseClient,
     .in('status', ['pending', 'confirmed']);
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return data;
@@ -89,7 +91,9 @@ export const updateApartmentById = async (
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   if (!data) {
     throw new AppError("Resource not found", 404);
@@ -109,7 +113,7 @@ export const deleteApartmentById = async (supabase: SupabaseClient,
     .eq("apartment_id", id);
 
   if (imagesError) {
-    throw new Error(imagesError.message);
+    throw imagesError;
   }
 
   // 2. Usuń pliki ze storage
@@ -131,7 +135,7 @@ export const deleteApartmentById = async (supabase: SupabaseClient,
       .eq("apartment_id", id);
 
     if (deleteImagesError) {
-      throw new Error(deleteImagesError.message);
+      throw deleteImagesError;
     }
   }
 
@@ -143,7 +147,7 @@ export const deleteApartmentById = async (supabase: SupabaseClient,
     .select();
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return data;
@@ -177,7 +181,7 @@ export const updateApartmentCover = async (supabase: SupabaseClient,
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return data;
@@ -197,7 +201,7 @@ export const updateApartmentCoverByImage = async (supabase: SupabaseClient,
     .single();
 
   if (imageError || !image) {
-    throw new Error('Image not found');
+    throw imageError;
   }
 
   // 2. update apartments.image
@@ -211,7 +215,7 @@ export const updateApartmentCoverByImage = async (supabase: SupabaseClient,
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return data;
@@ -225,7 +229,9 @@ export const fetchImagesByApartmentId = async (apartmentId: string) => {
         .eq('apartment_id', apartmentId)
         .order('position', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     return data;
 };
@@ -264,7 +270,7 @@ export const fetchApartmentsPaginated = async (params: {
   const { data, error, count } = await query;
 
   if (error) {
-    throw new Error(error.message);
+    throw error;
   }
 
   return {
@@ -310,7 +316,9 @@ export const fetchAvailableApartments = async (params: {
     .lt("check_in", to)
     .gt("check_out", from);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw error;
+  }
 
   const bookedApartmentIds =
     [...new Set(conflicts?.map(b => b.apartment_id).filter(Boolean))];
@@ -345,7 +353,9 @@ export const fetchAvailableApartments = async (params: {
 
   const { data, error: qErr } = await query;
 
-  if (qErr) throw new Error(qErr.message);
+  if (qErr) {
+    throw qErr;
+  }
 
   return data || [];
 };
@@ -364,12 +374,11 @@ export const fetchApartmentsWithBookings = async () => {
     `)
 
   if (error) {
-    console.error(error)
-    return []
+    throw error;
   }
 
-  return data
-}
+  return data ?? [];
+};
 
 //wszystkie apartamenty bez zdjec tylko okladka
 export const fetchAllApartments = async () => {
@@ -378,7 +387,7 @@ export const fetchAllApartments = async () => {
     .select("*");
 
   if (error) {
-    throw new Error(`Failed to fetch apartments: ${error.message}`);
+    throw error;
   }
 
   return data ?? [];
@@ -452,7 +461,9 @@ export const updateApartmentStatus = async (
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   if (!data) {
     throw new AppError("Resource not found", 404);
@@ -480,7 +491,9 @@ export const upsertApartmentPricingService = async (
     })
     .select();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return data;
 };
@@ -501,7 +514,9 @@ export const deleteApartmentPricingService = async (
   if (!to) {
     const { error } = await query.eq("date", from);
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     return { message: "Pricing deleted successfully" };
   }
@@ -511,7 +526,9 @@ export const deleteApartmentPricingService = async (
     .gte("date", from)
     .lte("date", to);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return { message: "Pricing range deleted successfully" };
 };
