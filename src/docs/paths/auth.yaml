@@ -20,7 +20,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LoginRequest"
+              $ref: "../components/schemas/auth.yaml#/LoginRequest"
 
       responses:
         200:
@@ -34,21 +34,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthUser"
+                $ref: "../components/schemas/auth.yaml#/AuthUser"
 
         400:
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ValidationError"
+                $ref: "../components/schemas/common.yaml#/ValidationError"
 
         401:
           description: Invalid email or password
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "../components/schemas/common.yaml#/ErrorResponse"
 
   /auth/refresh:
     post:
@@ -89,7 +89,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "../components/schemas/common.yaml#/ErrorResponse"
 
   /auth/logout:
     post:
@@ -112,7 +112,6 @@ paths:
                     type: string
                     example: Logged out
 
-
   /auth/me:
     get:
       tags:
@@ -127,89 +126,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthUser"
+                $ref: "../components/schemas/auth.yaml#/AuthUser"
 
         401:
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-components:
-
-  schemas:
-
-    LoginRequest:
-      type: object
-      required:
-        - email
-        - password
-      properties:
-        email:
-          type: string
-          format: email
-          example: admin@swtest.pl
-
-        password:
-          type: string
-          format: password
-          example: secret123
-
-
-    AuthUser:
-      type: object
-      properties:
-
-        authenticated:
-          type: boolean
-          example: true
-
-        user:
-          type: object
-          properties:
-            id:
-              type: string
-              format: uuid
-
-            email:
-              type: string
-              format: email
-              example: admin@domena.com
-
-        session:
-          type: object
-          properties:
-            expiresAt:
-              type: string
-              format: date-time
-              example: "2026-06-08T12:30:00.000Z"
-
-
-    ErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Unauthorized
-
-
-    ValidationError:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Validation error
-
-        errors:
-          type: array
-          items:
-            type: object
-            properties:
-              field:
-                type: string
-                example: email
-
-              message:
-                type: string
-                example: Invalid email
+                $ref: "../components/schemas/common.yaml#/ErrorResponse"

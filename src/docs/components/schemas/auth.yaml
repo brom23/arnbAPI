@@ -1,0 +1,44 @@
+LoginRequest:
+  type: object
+  required:
+    - email
+    - password
+  properties:
+    email:
+      type: string
+      format: email
+      example: admin@swtest.pl
+
+    password:
+      type: string
+      format: password
+      example: secret123
+
+
+AuthUser:
+  type: object
+  properties:
+
+    authenticated:
+      type: boolean
+      example: true
+
+    user:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+
+        email:
+          type: string
+          format: email
+          example: admin@domena.com
+
+    session:
+      type: object
+      properties:
+        expiresAt:
+          type: string
+          format: date-time
+          example: "2026-06-08T12:30:00.000Z"
