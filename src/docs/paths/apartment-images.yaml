@@ -180,6 +180,8 @@ paths:
             application/json:
               schema:
                 $ref: "#schemas/SuccessResponse"
+              example:
+                message: "Image deleted successfully"
         400:
           $ref: "../components/responses/common.yaml#/BadRequest"
 

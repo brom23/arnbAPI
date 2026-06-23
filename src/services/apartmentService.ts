@@ -3,16 +3,22 @@ import { ApartmentPriceMap, ApartmentPricingResponse } from '../types/apartmentP
 import { AppError } from '../utils/AppError';
 import { removeFileFromStorage } from '../utils/storage';
 import { SupabaseClient } from "@supabase/supabase-js";
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+
+const URL_STORAGE = process.env.SUPABASE_IMAGE_URL_STORAGE!;
 
 export const fetchApartments = async () => {
 
-    const { data, error } = await supabaseAnon
-        .from('apartments')
-        .select('*');
+  const { data, error } = await supabaseAnon
+    .from('apartments')
+    .select('*');
 
-    if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
-    return data;
+  return data;
 };
 
 export const fetchApartmentById = async (
@@ -37,26 +43,26 @@ export const fetchApartmentById = async (
 
 export const insertApartment = async (supabase: SupabaseClient, payload: any) => {
 
-    const { data, error } = await supabase
-        .from('apartments')
-        .insert([
-            {
-                title: payload.title,
-                description: payload.description,
-                price_per_night: payload.price_per_night,
-                city: payload.city,
-                image: payload.image,
-                guests: payload.guests,
-                slug: payload.slug
-            }
-        ])
-        .select();
-    
-    if (error) {
-      throw error;
-    }
+  const { data, error } = await supabase
+    .from('apartments')
+    .insert([
+      {
+        title: payload.title,
+        description: payload.description,
+        price_per_night: payload.price_per_night,
+        city: payload.city,
+        image: payload.image,
+        guests: payload.guests,
+        slug: payload.slug
+      }
+    ])
+    .select();
 
-    return data;
+  if (error) {
+    throw error;
+  }
+
+  return data;
 };
 
 export const fetchApartmentBookings = async (supabase: SupabaseClient,
@@ -116,27 +122,26 @@ export const deleteApartmentById = async (supabase: SupabaseClient,
     throw imagesError;
   }
 
-  // 2. Usuń pliki ze storage
-  if (images && images.length > 0) {
-
-    await Promise.all(
-      images.map((image) =>
-        removeFileFromStorage(
-          "apartments",
-          image.url
-        )
-      )
+  if (images?.length) {
+    const storageImages = images.filter((img) =>
+      img.url?.includes(URL_STORAGE)
     );
 
-    // 3. Usuń rekordy zdjęć
-    const { error: deleteImagesError } = await supabase
-      .from("apartment_images")
-      .delete()
-      .eq("apartment_id", id);
+    await Promise.all(
+      storageImages.map((image) =>
+        removeFileFromStorage("apartments", image.url)
+      )
+    );
+  }
 
-    if (deleteImagesError) {
-      throw deleteImagesError;
-    }
+  // 3. Usuń rekordy zdjęć
+  const { error: deleteImagesError } = await supabase
+    .from("apartment_images")
+    .delete()
+    .eq("apartment_id", id);
+
+  if (deleteImagesError) {
+    throw deleteImagesError;
   }
 
   // 4. Usuń apartment
@@ -170,7 +175,27 @@ export const updateApartmentCover = async (supabase: SupabaseClient,
     throw new Error('Image not found for this apartment');
   }
 
-  // update cover
+  // usuń flagę cover ze wszystkich zdjęć apartamentu
+  const { error: resetCoverError } = await supabase
+    .from('apartment_images')
+    .update({ is_cover: false })
+    .eq('apartment_id', apartmentId);
+
+  if (resetCoverError) {
+    throw resetCoverError;
+  }
+
+  // ustaw wybrane zdjęcie jako cover
+  const { error: setCoverError } = await supabase
+    .from('apartment_images')
+    .update({ is_cover: true })
+    .eq('id', imageId);
+
+  if (setCoverError) {
+    throw setCoverError;
+  }
+
+  // update main cover in apartments.image
   const { data, error } = await supabase
     .from('apartments')
     .update({
@@ -200,8 +225,9 @@ export const updateApartmentCoverByImage = async (supabase: SupabaseClient,
     .eq('apartment_id', apartmentId)
     .single();
 
+  // apartmentId || imageId - nie ma ich w bazie.
   if (imageError || !image) {
-    throw imageError;
+    throw new AppError("Resource not found", 404);
   }
 
   // 2. update apartments.image
@@ -223,17 +249,17 @@ export const updateApartmentCoverByImage = async (supabase: SupabaseClient,
 
 export const fetchImagesByApartmentId = async (apartmentId: string) => {
 
-    const { data, error } = await supabaseAnon
-        .from('apartment_images')
-        .select('*')
-        .eq('apartment_id', apartmentId)
-        .order('position', { ascending: true });
+  const { data, error } = await supabaseAnon
+    .from('apartment_images')
+    .select('*')
+    .eq('apartment_id', apartmentId)
+    .order('position', { ascending: true });
 
-    if (error) {
-      throw error;
-    }
+  if (error) {
+    throw error;
+  }
 
-    return data;
+  return data;
 };
 
 export const fetchApartmentsPaginated = async (params: {

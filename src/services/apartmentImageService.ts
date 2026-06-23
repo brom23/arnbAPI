@@ -3,8 +3,7 @@ import { supabaseAnon,supabaseAdmin } from '../lib/supabase';
 import { removeFileFromStorage } from '../utils/storage';
 import { AppError } from '../utils/AppError';
 
-const URL_STORAGE =
-    `https://hhprezzotbbatuqjihry.supabase.co/storage/v1/object/public/apartment_images/`;
+const URL_STORAGE = process.env.SUPABASE_IMAGE_URL_STORAGE!;
 
 export const insertApartmentImage = async (payload: any) => {
 

@@ -285,6 +285,8 @@ paths:
 
         400:
           $ref: "../components/responses/common.yaml#/BadRequest"
+          examples:
+            - message: imageId is required
 
         404:
           $ref: "../components/responses/common.yaml#/NotFound"
