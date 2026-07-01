@@ -4,20 +4,16 @@ import { ZodSchema, ZodError } from "zod";
 type Target = "body" | "query" | "params";
 
 export const validate =
-  (schema: ZodSchema, target: Target = "body") =>
+  <T>(schema: ZodSchema<T>, target: Target = "body") =>
   (req: Request, res: Response, next: NextFunction) => {
     try {
-
       const parsed = schema.parse(req[target]);
 
-      req[target] = parsed;
+      (req as any)[target] = parsed;
 
       next();
-
     } catch (error) {
-
       if (error instanceof ZodError) {
-
         return res.status(400).json({
           message: "Validation error",
           errors: error.issues.map((issue) => ({

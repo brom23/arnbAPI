@@ -12,8 +12,9 @@ COPY . .
 # Build TypeScript
 RUN npm run build
 
+# NO LONGER REQUIRED
 # Build Swagger / OpenAPI
-RUN npm run docs:build
+#RUN npm run docs:build
 
 # Etap produkcyjny
 FROM node:22-alpine

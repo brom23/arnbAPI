@@ -1,18 +1,19 @@
 import express from "express";
 import { Router } from "express";
-import swaggerUi from "swagger-ui-express";
 import fs from "fs";
 import path from "path";
 
-import apartmentRoutes from "./routes/apartmentRoutes";
-import bookingRoutes from "./routes/bookingRoutes";
-import apartmentImageRoutes from "./routes/apartmentImageRoutes";
-import authRoutes from "./routes/authRoutes";
+import apartmentRoutes from "./modules/apartments/routes";
+import bookingRoutes from "./modules/bookings/routes";
+import apartmentImageRoutes from "./modules/apartment-images/routes";
+import authRoutes from "./modules/auth/routes";
 import corsMiddleware from "./cors";
 import cookieParser from "cookie-parser";
 import { requestLogger } from "./middleware/requestLogger";
 import { log } from "./utils/logger";
 import { errorHandler } from "./middleware/errorHandler";
+
+import { swaggerMiddleware } from "./docs";
 
 const app = express();
 
@@ -45,29 +46,29 @@ app.use(corsMiddleware);
 //
 // SWAGGER
 //
-const swaggerPath = path.join(process.cwd(), "dist/openapi.json");
+// const swaggerPath = path.join(process.cwd(), "dist/openapi.json");
 
-if (!fs.existsSync(swaggerPath)) {
-  throw new Error(
-    `Swagger file not found. Run: npm run docs:build -> ${swaggerPath}`
-  );
-}
+// if (!fs.existsSync(swaggerPath)) {
+//   throw new Error(
+//     `Swagger file not found. Run: npm run docs:build -> ${swaggerPath}`
+//   );
+// }
 
-const swaggerDocument = JSON.parse(
-  fs.readFileSync(swaggerPath, "utf8")
-);
+// const swaggerDocument = JSON.parse(
+//   fs.readFileSync(swaggerPath, "utf8")
+// );
 
-app.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerDocument, {
-    explorer: true,
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-  })
-);
-
+// app.use(
+//   "/api-docs",
+//   swaggerUi.serve,
+//   swaggerUi.setup(swaggerDocument, {
+//     explorer: true,
+//     swaggerOptions: {
+//       persistAuthorization: true,
+//     },
+//   })
+// );
+app.use("/api-docs", ...swaggerMiddleware);
 //
 // ROUTE REGISTRY
 //
